@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # include files
 set(loxe_include_files
+        include/loxe/token.hpp
         include/loxe/utility.hpp
 
         # includes all files in loxe directory
@@ -15,6 +16,8 @@ set(loxe_include_files
 
 # source files
 set(loxe_source_files
+        src/loxe/token.cpp
+
         # entry point into program: `main`
         src/loxe.cpp
 )
