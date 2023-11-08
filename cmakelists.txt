@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.8)
+project(loxe)
+
+set(CMAKE_CXX_STANDARD          20)
+set(CMAKE_CXX_EXTENSIONS        OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# include files
+set(loxe_include_files
+        include/loxe/utility.hpp
+
+        # includes all files in loxe directory
+        include/loxe.hpp
+)
+
+# source files
+set(loxe_source_files
+        # entry point into program: `main`
+        src/loxe.cpp
+)
+
+add_executable(loxe ${loxe_source_files} ${loxe_include_files})
+target_include_directories(loxe PRIVATE ${CMAKE_SOURCE_DIR}/include)
