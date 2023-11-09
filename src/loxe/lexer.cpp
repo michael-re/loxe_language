@@ -60,6 +60,12 @@ auto loxe::Lexer::peek0() const -> std::optional<char>
     return at_end() ? std::nullopt : std::optional(m_source[m_cursor]);
 }
 
+auto loxe::Lexer::peek1() const -> std::optional<char>
+{
+    const auto next = m_cursor + 1;
+    return at_end() || next >= m_source.size() ? std::nullopt : std::optional(m_source[next]);
+}
+
 auto loxe::Lexer::skip_whitespace() -> std::optional<char>
 {
     while (!at_end())
@@ -72,10 +78,38 @@ auto loxe::Lexer::skip_whitespace() -> std::optional<char>
             case '\n':
                 utility::ignore(advance());
                 break;
+           case '/':
+                if (auto c = peek1(); !c || (*c != '/' && *c != '*'))
+                    return peek0();
+                utility::ignore(skip_comment());
+                break;
             default:
                 return peek0();
-                break;
         }
+    }
+
+    return peek0();
+}
+
+auto loxe::Lexer::skip_comment() -> std::optional<char>
+{
+    auto check = [&](char a, char b) -> bool
+    {
+        const auto c0 = peek0();
+        const auto c1 = peek1();
+        return (c0 && c1 && *c0 == a && *c1 == b);
+    };
+
+    if (check('/', '/')) // single-line comment
+    {
+        while (!at_end() && *peek0() != '\n') utility::ignore(advance());
+        utility::ignore(advance()); // '\n'
+    }
+    else if (check('/', '*')) // multi-line comment
+    {
+        utility::ignore(advance(), advance()); // /*
+        while (!check('*', '/')) utility::ignore(advance());
+        utility::ignore(advance(), advance()); // */
     }
 
     return peek0();

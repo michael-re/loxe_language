@@ -10,10 +10,10 @@
 
 namespace loxe::utility
 {
-    template<typename T>
-    [[maybe_unused]] inline constexpr auto ignore(T&& value)
+    template<typename... Args>
+    [[maybe_unused]] inline constexpr auto ignore(Args&&... args) -> void
     {
-        return static_cast<void>(value);
+        return (static_cast<void>(args), ...);
     }
 
     template<typename T>
