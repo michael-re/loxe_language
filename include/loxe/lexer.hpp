@@ -28,7 +28,8 @@ namespace loxe
         [[nodiscard]] auto at_end() const -> bool;
         [[nodiscard]] auto peek0()  const -> std::optional<char>;
 
-        [[nodiscard]] auto advance() -> std::optional<char>;
+        [[nodiscard]] auto skip_whitespace() -> std::optional<char>;
+        [[nodiscard]] auto advance()         -> std::optional<char>;
 
     private:
         int         m_line   = 1;

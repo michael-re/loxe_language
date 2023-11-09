@@ -39,7 +39,7 @@ auto loxe::Lexer::peek_next() const -> const Token&
 
 auto loxe::Lexer::lex_token() -> Token
 {
-    if (auto c = peek0())
+    if (const auto c = skip_whitespace())
     {
         auto line = m_line;
         auto column = m_column;
@@ -58,6 +58,27 @@ auto loxe::Lexer::at_end() const -> bool
 auto loxe::Lexer::peek0() const -> std::optional<char>
 {
     return at_end() ? std::nullopt : std::optional(m_source[m_cursor]);
+}
+
+auto loxe::Lexer::skip_whitespace() -> std::optional<char>
+{
+    while (!at_end())
+    {
+        switch (*peek0())
+        {
+            case ' ':
+            case '\r':
+            case '\t':
+            case '\n':
+                utility::ignore(advance());
+                break;
+            default:
+                return peek0();
+                break;
+        }
+    }
+
+    return peek0();
 }
 
 auto loxe::Lexer::advance() -> std::optional<char>
