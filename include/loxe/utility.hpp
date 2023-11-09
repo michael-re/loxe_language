@@ -11,6 +11,12 @@
 namespace loxe::utility
 {
     template<typename T>
+    [[maybe_unused]] inline constexpr auto ignore(T&& value)
+    {
+        return static_cast<void>(value);
+    }
+
+    template<typename T>
     [[nodiscard]] inline auto as_string(const T& value) -> std::string
     {
         return (std::ostringstream() << value).str();
