@@ -6,6 +6,16 @@
     return ('0' <= c && c <= '9');
 }
 
+[[nodiscard]] inline constexpr auto is_alpha(char c) -> bool
+{
+    return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+}
+
+[[nodiscard]] inline constexpr auto is_ident(char c) -> bool
+{
+    return (c == '_' || is_digit(c) || is_alpha(c));
+}
+
 auto loxe::Lexer::lex() -> Lexer&
 {
     if (m_source.empty())
@@ -47,8 +57,9 @@ auto loxe::Lexer::lex_token() -> Token
     const auto c = skip_whitespace();
     if (!c)           return { Token::Type::EndOfFile, m_line, m_column };
     if (is_digit(*c)) return lex_number();
+    if (is_ident(*c)) return lex_identifier();
 
-    const auto line = m_line;
+    const auto line   = m_line;
     const auto column = m_column;
     utility::ignore(advance());
     return { Token::Type::Unknown, line, column, { *c } };
@@ -74,6 +85,18 @@ auto loxe::Lexer::lex_number() -> Token
     }
 
     return { Token::Type::Number, line, column, std::move(lexeme) };
+}
+
+auto loxe::Lexer::lex_identifier() -> Token
+{
+    const auto line   = m_line;
+    const auto column = m_column;
+
+    auto lexeme = std::string();
+    for (auto c = peek0(); c && is_ident(*c); c = advance())
+        lexeme.push_back(*c);
+
+    return { Token::Type::Identifier, line, column, std::move(lexeme) };
 }
 
 auto loxe::Lexer::at_end() const -> bool
