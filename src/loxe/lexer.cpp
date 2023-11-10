@@ -1,6 +1,11 @@
 #include "loxe/lexer.hpp"
 #include "loxe/utility.hpp"
 
+[[nodiscard]] inline constexpr auto is_digit(char c) -> bool
+{
+    return ('0' <= c && c <= '9');
+}
+
 auto loxe::Lexer::lex() -> Lexer&
 {
     if (m_source.empty())
@@ -39,15 +44,36 @@ auto loxe::Lexer::peek_next() const -> const Token&
 
 auto loxe::Lexer::lex_token() -> Token
 {
-    if (const auto c = skip_whitespace())
+    const auto c = skip_whitespace();
+    if (!c)           return { Token::Type::EndOfFile, m_line, m_column };
+    if (is_digit(*c)) return lex_number();
+
+    const auto line = m_line;
+    const auto column = m_column;
+    utility::ignore(advance());
+    return { Token::Type::Unknown, line, column, { *c } };
+}
+
+auto loxe::Lexer::lex_number() -> Token
+{
+    const auto line   = m_line;
+    const auto column = m_column;
+
+    auto lexeme = std::string();
+    for (auto c = peek0(); c && is_digit(*c); c = advance())
+        lexeme.push_back(*c);
+
+    if (peek0() && *peek0() == '.')
     {
-        auto line = m_line;
-        auto column = m_column;
-        utility::ignore(advance());
-        return { Token::Type::Unknown, line, column, { *c } };
+        lexeme.push_back('.');
+        for (auto c = advance(); c && is_digit(*c); c = advance())
+            lexeme.push_back(*c);
+
+        while (lexeme.back() == '0') lexeme.pop_back(); // remove trailing zeros
+        if    (lexeme.back() == '.') lexeme.pop_back(); // remove trailing decimal
     }
 
-    return { Token::Type::EndOfFile, m_line, m_column };
+    return { Token::Type::Number, line, column, std::move(lexeme) };
 }
 
 auto loxe::Lexer::at_end() const -> bool
@@ -122,14 +148,12 @@ auto loxe::Lexer::advance() -> std::optional<char>
         if (*peek0() == '\n')
         {
             m_line++;
-            m_column = 1;
-        }
-        else
-        {
-            m_column++;
+            m_column = 0;
         }
 
+        m_column++;
         m_cursor++;
     }
+
     return peek0();
 }
