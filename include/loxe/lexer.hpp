@@ -23,9 +23,10 @@ namespace loxe
         [[nodiscard]] auto peek_next() const -> const Token&;
 
     private:
-        [[nodiscard]] auto lex_token()      -> Token;
-        [[nodiscard]] auto lex_number()     -> Token;
-        [[nodiscard]] auto lex_identifier() -> Token;
+        [[nodiscard]] auto lex_token()       -> Token;
+        [[nodiscard]] auto lex_number()      -> Token;
+        [[nodiscard]] auto lex_identifier()  -> Token;
+        [[nodiscard]] auto lex_punctuation() -> Token;
 
         [[nodiscard]] auto at_end() const -> bool;
         [[nodiscard]] auto peek0()  const -> std::optional<char>;

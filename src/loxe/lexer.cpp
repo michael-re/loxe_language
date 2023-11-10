@@ -55,14 +55,10 @@ auto loxe::Lexer::peek_next() const -> const Token&
 auto loxe::Lexer::lex_token() -> Token
 {
     const auto c = skip_whitespace();
-    if (!c)           return { Token::Type::EndOfFile, m_line, m_column };
-    if (is_digit(*c)) return lex_number();
-    if (is_ident(*c)) return lex_identifier();
-
-    const auto line   = m_line;
-    const auto column = m_column;
-    utility::ignore(advance());
-    return { Token::Type::Unknown, line, column, { *c } };
+    if      (!c)           return { Token::Type::EndOfFile, m_line, m_column };
+    else if (is_digit(*c)) return lex_number();
+    else if (is_ident(*c)) return lex_identifier();
+    else                   return lex_punctuation();
 }
 
 auto loxe::Lexer::lex_number() -> Token
@@ -97,6 +93,57 @@ auto loxe::Lexer::lex_identifier() -> Token
         lexeme.push_back(*c);
 
     return { Token::Type::Identifier, line, column, std::move(lexeme) };
+}
+
+auto loxe::Lexer::lex_punctuation() -> Token
+{
+    const auto line   = m_line;
+    const auto column = m_column;
+
+    auto make_token = [&](Token::Type type, int length = 1) -> Token
+    {
+        auto lexeme = std::string();
+        for (auto c = peek0(); c && length; length--, c = advance())
+            lexeme.push_back(*c);
+
+        return { type, line, column, std::move(lexeme) };
+    };
+
+    const auto next   = peek1();
+    const auto is_eq  = next && *next == '=';
+    const auto length = is_eq ? 2 : 1;
+
+    switch (*peek0())
+    {
+        // single character tokens
+        case '(': return make_token(Token::Type::LeftParen);
+        case ')': return make_token(Token::Type::RightParen);
+        case '{': return make_token(Token::Type::LeftBrace);
+        case '}': return make_token(Token::Type::RightBrace);
+        case ';': return make_token(Token::Type::Semicolon);
+        case ',': return make_token(Token::Type::Comma);
+        case '.': return make_token(Token::Type::Dot);
+        case '-': return make_token(Token::Type::Minus);
+        case '+': return make_token(Token::Type::Plus);
+        case '/': return make_token(Token::Type::Slash);
+        case '*': return make_token(Token::Type::Star);
+
+        // single or double character tokens
+        case '!': return make_token(is_eq ? Token::Type::BangEqual    : Token::Type::Bang,    length);
+        case '=': return make_token(is_eq ? Token::Type::EqualEqual   : Token::Type::Equal,   length);
+        case '<': return make_token(is_eq ? Token::Type::LessEqual    : Token::Type::Less,    length);
+        case '>': return make_token(is_eq ? Token::Type::GreaterEqual : Token::Type::Greater, length);
+
+        // string literals
+        case '"': break; // TODO: lex string
+    }
+
+    const auto as_char = char{ *peek0() };
+    const auto as_int  = int { as_char  };
+    const auto value   = (as_char <= ' ') ? "int value - " + std::to_string(as_int) : std::string(1, as_char);
+
+    utility::ignore(advance());
+    return { Token::Type::Unknown, line, column, "unexpected character: (" + value + ")"};
 }
 
 auto loxe::Lexer::at_end() const -> bool
