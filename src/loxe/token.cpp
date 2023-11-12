@@ -69,3 +69,24 @@ auto loxe::Token::type_string() const -> std::string
     const auto index = static_cast<decltype(token_str)::size_type>(type);
     return index < token_max ? token_str[index] : token_str.back();
 }
+
+auto loxe::Token::ident_type(std::string_view identifier) -> Type
+{
+    if (identifier == "and")    return Type::And;
+    if (identifier == "class")  return Type::Class;
+    if (identifier == "else")   return Type::Else;
+    if (identifier == "false")  return Type::False;
+    if (identifier == "for")    return Type::For;
+    if (identifier == "fun")    return Type::Fun;
+    if (identifier == "if")     return Type::If;
+    if (identifier == "nil")    return Type::Nil;
+    if (identifier == "or")     return Type::Or;
+    if (identifier == "print")  return Type::Print;
+    if (identifier == "return") return Type::Return;
+    if (identifier == "super")  return Type::Super;
+    if (identifier == "this")   return Type::This;
+    if (identifier == "true")   return Type::True;
+    if (identifier == "var")    return Type::Var;
+    if (identifier == "while")  return Type::While;
+    return Type::Identifier;
+}

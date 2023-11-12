@@ -108,7 +108,8 @@ auto loxe::Lexer::lex_identifier() -> Token
     for (auto c = peek0(); c && is_ident(*c); c = advance())
         lexeme.push_back(*c);
 
-    return { Token::Type::Identifier, line, column, std::move(lexeme) };
+    const auto type = Token::ident_type(lexeme);
+    return { type, line, column, std::move(lexeme) };
 }
 
 auto loxe::Lexer::lex_punctuation() -> Token

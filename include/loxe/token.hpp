@@ -71,6 +71,9 @@ namespace loxe
         [[nodiscard]] auto type_string() const -> std::string;
 
     public:
+        [[nodiscard]] static auto ident_type(std::string_view identifier) -> Type;
+
+    public:
         int         line   = -1;
         int         column = -1;
         Type        type   = Type::Unknown;
