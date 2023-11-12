@@ -25,6 +25,7 @@ namespace loxe
     private:
         [[nodiscard]] auto lex_token()       -> Token;
         [[nodiscard]] auto lex_number()      -> Token;
+        [[nodiscard]] auto lex_string()      -> Token;
         [[nodiscard]] auto lex_identifier()  -> Token;
         [[nodiscard]] auto lex_punctuation() -> Token;
 

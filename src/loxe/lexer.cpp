@@ -83,6 +83,22 @@ auto loxe::Lexer::lex_number() -> Token
     return { Token::Type::Number, line, column, std::move(lexeme) };
 }
 
+auto loxe::Lexer::lex_string() -> Token
+{
+    const auto line   = m_line;
+    const auto column = m_column;
+
+    auto lexeme = std::string();
+    for (auto c = advance(); c && *c != '"'; c = advance())
+        lexeme.push_back(*c);
+
+    if (at_end())
+        return { Token::Type::Unknown, line, column, "unterminated string literal" };
+
+    utility::ignore(advance()); // trailing "
+    return { Token::Type::String, line, column, std::move(lexeme) };
+}
+
 auto loxe::Lexer::lex_identifier() -> Token
 {
     const auto line   = m_line;
@@ -135,7 +151,7 @@ auto loxe::Lexer::lex_punctuation() -> Token
         case '>': return make_token(is_eq ? Token::Type::GreaterEqual : Token::Type::Greater, length);
 
         // string literals
-        case '"': break; // TODO: lex string
+        case '"': return lex_string();
     }
 
     const auto as_char = char{ *peek0() };
