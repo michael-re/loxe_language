@@ -3,8 +3,10 @@
 #ifndef LOXE_LOXE_HPP
 #define LOXE_LOXE_HPP
 
+#include "loxe/except.hpp"
 #include "loxe/expr.hpp"
 #include "loxe/lexer.hpp"
+#include "loxe/parser.hpp"
 #include "loxe/token.hpp"
 #include "loxe/utility.hpp"
 

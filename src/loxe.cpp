@@ -7,9 +7,9 @@ auto main() -> int
     auto line = std::string();
     std::getline(std::cin, line);
 
-    auto lexer = Lexer(std::move(line));
-    while (lexer.lex().peek_curr().type != Token::Type::EndOfFile)
-        utility::println("{}", lexer.peek_curr().to_string());
+    auto expression = Parser().parse(std::move(line));
+    if (expression) utility::println("expression parsed successfully");
+    else            utility::println("error parsing expression");
 
     return EXIT_SUCCESS;
 }
