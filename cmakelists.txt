@@ -77,6 +77,7 @@ set(loxe_include_files
         include/loxe/lexer.hpp
         include/loxe/parser.hpp
         include/loxe/token.hpp
+        include/loxe/tree_walker.hpp
         include/loxe/utility.hpp
 
         # includes all files in loxe directory
@@ -88,6 +89,7 @@ set(loxe_source_files
         src/loxe/lexer.cpp
         src/loxe/parser.cpp
         src/loxe/token.cpp
+        src/loxe/tree_walker.cpp
 
         # entry point into program: `main`
         src/loxe.cpp

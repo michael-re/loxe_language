@@ -1,15 +1,19 @@
 #include "loxe.hpp"
 
-auto main() -> int
+auto main(int argc, char* argv[]) -> int
 {
-    using namespace loxe;
-
-    auto line = std::string();
-    std::getline(std::cin, line);
-
-    auto expression = Parser().parse(std::move(line));
-    if (expression) utility::println("expression parsed successfully");
-    else            utility::println("error parsing expression");
+    switch (argc)
+    {
+        case 1:
+            loxe::TreeWalker().run_repl(">> ");
+            break;
+        case 2:
+            loxe::TreeWalker().run_file(argv[1]);
+            break;
+        default:
+            loxe::utility::println(std::cerr, "usage: loxe [script]");
+            break;
+    }
 
     return EXIT_SUCCESS;
 }
