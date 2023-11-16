@@ -14,10 +14,32 @@ namespace loxe::ast
 
     struct Expr
     {
+        struct Visitor
+        {
+            virtual ~Visitor() = default;
+            virtual auto visit(const struct BinaryExpr&)   -> void = 0;
+            virtual auto visit(const struct BooleanExpr&)  -> void = 0;
+            virtual auto visit(const struct GroupingExpr&) -> void = 0;
+            virtual auto visit(const struct NilExpr&)      -> void = 0;
+            virtual auto visit(const struct NumberExpr&)   -> void = 0;
+            virtual auto visit(const struct StringExpr&)   -> void = 0;
+            virtual auto visit(const struct UnaryExpr&)    -> void = 0;
+        };
+
         virtual ~Expr() = default;
+        virtual auto accept(Visitor&) const -> void = 0;
     };
 
-    struct BinaryExpr final : public Expr
+    template<typename Derived>
+    struct ExprCRTP : public Expr
+    {
+        auto accept(Visitor& visitor) const -> void override
+        {
+            return visitor.visit(*static_cast<const Derived*>(this));
+        };
+    };
+
+    struct BinaryExpr final : public ExprCRTP<BinaryExpr>
     {
         BinaryExpr(Token op, expr_ptr lhs, expr_ptr rhs)
             : op(std::move(op)), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
@@ -27,7 +49,7 @@ namespace loxe::ast
         expr_ptr rhs;
     };
 
-    struct GroupingExpr final : public Expr
+    struct GroupingExpr final : public ExprCRTP<GroupingExpr>
     {
         GroupingExpr(expr_ptr expression)
             : expression(std::move(expression)) {}
@@ -35,7 +57,7 @@ namespace loxe::ast
         expr_ptr expression;
     };
 
-    struct NilExpr final : public Expr
+    struct NilExpr final : public ExprCRTP<NilExpr>
     {
         NilExpr(Token token)
             : token(std::move(token)) {}
@@ -43,7 +65,7 @@ namespace loxe::ast
         Token token;
     };
 
-    struct BooleanExpr final : public Expr
+    struct BooleanExpr final : public ExprCRTP<BooleanExpr>
     {
         BooleanExpr(Token token)
             : value(token.type == Token::Type::True), token(std::move(token)) {}
@@ -52,7 +74,7 @@ namespace loxe::ast
         Token token;
     };
 
-    struct NumberExpr final : public Expr
+    struct NumberExpr final : public ExprCRTP<NumberExpr>
     {
         NumberExpr(Token token)
             : value(std::stod(token.lexeme)), token(std::move(token)) {}
@@ -61,7 +83,7 @@ namespace loxe::ast
         Token  token;
     };
 
-    struct StringExpr final : public Expr
+    struct StringExpr final : public ExprCRTP<StringExpr>
     {
         StringExpr(Token value)
             : value(std::move(value)) {}
@@ -69,7 +91,7 @@ namespace loxe::ast
         Token value;
     };
 
-    struct UnaryExpr final : public Expr
+    struct UnaryExpr final : public ExprCRTP<UnaryExpr>
     {
         UnaryExpr(Token op, expr_ptr operand)
             : op(std::move(op)), operand(std::move(operand)) {}
