@@ -46,7 +46,7 @@ namespace loxe::ast
     struct BooleanExpr final : public Expr
     {
         BooleanExpr(Token token)
-            : value(token.lexeme == "true"), token(std::move(token)) {}
+            : value(token.type == Token::Type::True), token(std::move(token)) {}
 
         bool  value;
         Token token;
