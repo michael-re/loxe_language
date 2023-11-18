@@ -6,7 +6,7 @@
 auto loxe::TreeWalker::run(std::string source) -> void
 {
     auto program = m_parser.parse(std::move(source));
-    if (program) utility::println("program parsed successfully");
+    if (program) m_interpreter.interpret(program);
     else         utility::println("error parsing program");
 }
 

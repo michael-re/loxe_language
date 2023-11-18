@@ -6,6 +6,7 @@
 #include <string>
 
 #include "parser.hpp"
+#include "interpreter.hpp"
 
 namespace loxe
 {
@@ -17,7 +18,8 @@ namespace loxe
         auto run_file(std::string_view filename) -> void;
 
     private:
-        Parser m_parser;
+        Parser      m_parser;
+        Interpreter m_interpreter;
     };
 } // namespace loxe
 
