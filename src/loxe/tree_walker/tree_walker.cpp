@@ -1,7 +1,7 @@
 #include <fstream>
 
-#include "loxe/tree_walker.hpp"
-#include "loxe/utility.hpp"
+#include "loxe/common/utility.hpp"
+#include "loxe/tree_walker/tree_walker.hpp"
 
 auto loxe::TreeWalker::run(std::string source) -> void
 {

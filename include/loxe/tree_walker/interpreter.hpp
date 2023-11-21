@@ -1,9 +1,9 @@
 #pragma once
 
-#ifndef LOXE_INTERPRETER_HPP
-#define LOXE_INTERPRETER_HPP
+#ifndef LOXE_TREE_WALKER_INTERPRETER_HPP
+#define LOXE_TREE_WALKER_INTERPRETER_HPP
 
-#include "expr.hpp"
+#include "loxe/parser/expr.hpp"
 
 namespace loxe
 {
@@ -23,4 +23,4 @@ namespace loxe
     };
 } // namespace loxe
 
-#endif // !LOXE_INTERPRETER_HPP
+#endif // !LOXE_TREE_WALKER_INTERPRETER_HPP

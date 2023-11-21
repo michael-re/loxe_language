@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LOXE_TOKEN_HPP
-#define LOXE_TOKEN_HPP
+#ifndef LOXE_PARSER_TOKEN_HPP
+#define LOXE_PARSER_TOKEN_HPP
 
 #include <string>
 
@@ -81,4 +81,4 @@ namespace loxe
     };
 } // namespace loxe
 
-#endif // !LOXE_TOKEN_HPP
+#endif // !LOXE_PARSER_TOKEN_HPP

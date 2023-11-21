@@ -1,5 +1,5 @@
-#include "loxe/interpreter.hpp"
-#include "loxe/utility.hpp"
+#include "loxe/common/utility.hpp"
+#include "loxe/tree_walker/interpreter.hpp"
 
 auto loxe::Interpreter::interpret(const ast::expr_ptr &expr) -> void
 {

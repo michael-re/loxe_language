@@ -1,5 +1,5 @@
-#include "loxe/parser.hpp"
-#include "loxe/utility.hpp"
+#include "loxe/common/utility.hpp"
+#include "loxe/parser/parser.hpp"
 
 loxe::Parser::ParseError::ParseError(Token token, std::string message)
     : token(std::move(token))

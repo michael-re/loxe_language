@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LOXE_LEXER_HPP
-#define LOXE_LEXER_HPP
+#ifndef LOXE_PARSER_LEXER_HPP
+#define LOXE_PARSER_LEXER_HPP
 
 #include <string>
 #include <optional>
@@ -52,4 +52,4 @@ namespace loxe
     };
 } // namespace loxe
 
-#endif // !LOXE_LEXER_HPP
+#endif // !LOXE_PARSER_LEXER_HPP

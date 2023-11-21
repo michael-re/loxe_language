@@ -1,12 +1,13 @@
 #pragma once
 
-#ifndef LOXE_PARSER_HPP
-#define LOXE_PARSER_HPP
+#ifndef LOXE_PARSER_PARSER_HPP
+#define LOXE_PARSER_PARSER_HPP
+
+#include "loxe/common/except.hpp"
 
 #include "expr.hpp"
 #include "lexer.hpp"
 #include "token.hpp"
-#include "except.hpp"
 
 namespace loxe
 {
@@ -49,4 +50,4 @@ namespace loxe
     };
 } // namespace loxe
 
-#endif // !LOXE_PARSER_HPP
+#endif // !LOXE_PARSER_PARSER_HPP

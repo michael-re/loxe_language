@@ -1,7 +1,7 @@
 #include <array>
 
-#include "loxe/token.hpp"
-#include "loxe/utility.hpp"
+#include "loxe/common/utility.hpp"
+#include "loxe/parser/token.hpp"
 
 auto loxe::Token::to_string() const -> std::string
 {

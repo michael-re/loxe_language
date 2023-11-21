@@ -1,5 +1,5 @@
-#include "loxe/lexer.hpp"
-#include "loxe/utility.hpp"
+#include "loxe/common/utility.hpp"
+#include "loxe/parser/lexer.hpp"
 
 [[nodiscard]] inline constexpr auto is_digit(char c) -> bool
 {

@@ -72,14 +72,19 @@ endif()
 
 # include files
 set(loxe_include_files
-        include/loxe/except.hpp
-        include/loxe/expr.hpp
-        include/loxe/interpreter.hpp
-        include/loxe/lexer.hpp
-        include/loxe/parser.hpp
-        include/loxe/token.hpp
-        include/loxe/tree_walker.hpp
-        include/loxe/utility.hpp
+        # common
+        include/loxe/common/except.hpp
+        include/loxe/common/utility.hpp
+
+        # parser
+        include/loxe/parser/expr.hpp
+        include/loxe/parser/lexer.hpp
+        include/loxe/parser/parser.hpp
+        include/loxe/parser/token.hpp
+
+        # tree walker
+        include/loxe/tree_walker/interpreter.hpp
+        include/loxe/tree_walker/tree_walker.hpp
 
         # includes all files in loxe directory
         include/loxe.hpp
@@ -87,11 +92,14 @@ set(loxe_include_files
 
 # source files
 set(loxe_source_files
-        src/loxe/interpreter.cpp
-        src/loxe/lexer.cpp
-        src/loxe/parser.cpp
-        src/loxe/token.cpp
-        src/loxe/tree_walker.cpp
+        # parser
+        src/loxe/parser/lexer.cpp
+        src/loxe/parser/parser.cpp
+        src/loxe/parser/token.cpp
+
+        # tree walker
+        src/loxe/tree_walker/interpreter.cpp
+        src/loxe/tree_walker/tree_walker.cpp
 
         # entry point into program: `main`
         src/loxe.cpp

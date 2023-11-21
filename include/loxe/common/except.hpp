@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LOXE_EXCEPT_HPP
-#define LOXE_EXCEPT_HPP
+#ifndef LOXE_COMMON_EXCEPT_HPP
+#define LOXE_COMMON_EXCEPT_HPP
 
 #include <string>
 #include <stdexcept>
@@ -24,4 +24,4 @@ namespace loxe
     };
 } // namespace loxe
 
-#endif // !LOXE_EXCEPT_HPP
+#endif // !LOXE_COMMON_EXCEPT_HPP

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LOXE_UTILITY_HPP
-#define LOXE_UTILITY_HPP
+#ifndef LOXE_COMMON_UTILITY_HPP
+#define LOXE_COMMON_UTILITY_HPP
 
 #include <format>
 #include <iostream>
@@ -55,4 +55,4 @@ namespace loxe::utility
     }
 } // namespace loxe::utility
 
-#endif // !LOXE_UTILITY_HPP
+#endif // !LOXE_COMMON_UTILITY_HPP

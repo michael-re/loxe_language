@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LOXE_EXPR_HPP
-#define LOXE_EXPR_HPP
+#ifndef LOXE_PARSER_EXPR_HPP
+#define LOXE_PARSER_EXPR_HPP
 
 #include <memory>
 #include <string>
@@ -49,6 +49,15 @@ namespace loxe::ast
         expr_ptr rhs;
     };
 
+    struct BooleanExpr final : public ExprCRTP<BooleanExpr>
+    {
+        BooleanExpr(Token token)
+            : value(token.type == Token::Type::True), token(std::move(token)) {}
+
+        bool  value;
+        Token token;
+    };
+
     struct GroupingExpr final : public ExprCRTP<GroupingExpr>
     {
         GroupingExpr(expr_ptr expression)
@@ -62,15 +71,6 @@ namespace loxe::ast
         NilExpr(Token token)
             : token(std::move(token)) {}
 
-        Token token;
-    };
-
-    struct BooleanExpr final : public ExprCRTP<BooleanExpr>
-    {
-        BooleanExpr(Token token)
-            : value(token.type == Token::Type::True), token(std::move(token)) {}
-
-        bool  value;
         Token token;
     };
 
@@ -101,4 +101,4 @@ namespace loxe::ast
     };
 } // namespace loxe::ast
 
-#endif // !LOXE_EXPR_HPP
+#endif // !LOXE_PARSER_EXPR_HPP
