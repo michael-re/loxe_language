@@ -15,6 +15,7 @@
 
 // tree walker
 #include "loxe/tree_walker/interpreter.hpp"
+#include "loxe/tree_walker/object.hpp"
 #include "loxe/tree_walker/tree_walker.hpp"
 
 #endif // !LOXE_LOXE_HPP

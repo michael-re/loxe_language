@@ -84,6 +84,7 @@ set(loxe_include_files
 
         # tree walker
         include/loxe/tree_walker/interpreter.hpp
+        include/loxe/tree_walker/object.hpp
         include/loxe/tree_walker/tree_walker.hpp
 
         # includes all files in loxe directory
