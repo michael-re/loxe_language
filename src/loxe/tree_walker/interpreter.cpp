@@ -30,8 +30,8 @@ auto loxe::Interpreter::visit(const ast::BooleanExpr& expr) -> void
 
 auto loxe::Interpreter::visit(const ast::GroupingExpr& expr) -> void
 {
-    utility::ignore(expr);
-    m_result = Object();
+    auto result = std::move(evaluate(expr.expression));
+    m_result    = std::move(result);
 }
 
 auto loxe::Interpreter::visit(const ast::NilExpr& expr) -> void
