@@ -1,4 +1,5 @@
 #include "loxe/common/utility.hpp"
+#include "loxe/tree_walker/error.hpp"
 #include "loxe/tree_walker/interpreter.hpp"
 
 loxe::Interpreter::Interpreter()
@@ -52,6 +53,19 @@ auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> void
 
 auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> void
 {
-    utility::ignore(expr);
-    m_result = Object();
+    auto operand = std::move(evaluate(expr.operand));
+    switch (expr.op.type)
+    {
+        case Token::Type::Minus:
+            if (!operand.is<Object::number>())
+                throw RuntimeError(expr.op, "'-' unary operator requires a numbers");
+            m_result = -operand.as<Object::number>();
+            break;
+        case Token::Type::Bang:
+            m_result = !operand.is_truthy();
+            break;
+        default:
+            throw RuntimeError(expr.op, "invalid unary operator");
+            break;
+    }
 }

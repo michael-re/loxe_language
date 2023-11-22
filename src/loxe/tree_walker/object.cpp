@@ -1,5 +1,12 @@
 #include "loxe/tree_walker/object.hpp"
 
+auto loxe::Object::is_truthy() const -> bool
+{
+    if (is<nil>())     return false;
+    if (is<boolean>()) return as<boolean>();
+    return true;
+}
+
 auto loxe::Object::stringify() const -> std::string
 {
     switch (m_value.index())
