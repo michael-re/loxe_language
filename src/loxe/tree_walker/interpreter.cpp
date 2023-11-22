@@ -7,7 +7,14 @@ loxe::Interpreter::Interpreter()
 
 auto loxe::Interpreter::interpret(const ast::expr_ptr& expr) -> void
 {
-    utility::println("{}", evaluate(expr).stringify());
+    try
+    {
+        utility::println("{}", evaluate(expr).stringify());
+    }
+    catch (const Exception& e)
+    {
+        utility::println(std::cerr, "{}", e.what());
+    }
 }
 
 auto loxe::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object&
@@ -20,8 +27,43 @@ auto loxe::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object&
 
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void
 {
-    utility::ignore(expr);
+    auto number = [&expr](const Object& object) -> Object::number {
+        if (!object.is<Object::number>()) throw RuntimeError(expr.op, "operator requires a number");
+        return object.as<Object::number>();
+    };
+
+    auto lhs = std::move(evaluate(expr.lhs));
+    auto rhs = std::move(evaluate(expr.rhs));
     m_result = Object();
+
+    switch (expr.op.type)
+    {
+        case Token::Type::BangEqual:  m_result = (lhs != rhs); break;
+        case Token::Type::EqualEqual: m_result = (lhs == rhs); break;
+        case Token::Type::Plus:
+            if (lhs.is<Object::string>() && rhs.is<Object::string>())
+            {
+                m_result = (lhs.as<Object::string>() + rhs.as<Object::string>());
+                break;
+            }
+
+            if (lhs.is<Object::number>() && rhs.is<Object::number>())
+            {
+                m_result = (lhs.as<Object::number>() + rhs.as<Object::number>());
+                break;
+            }
+
+            throw RuntimeError(expr.op, "'+' operator requires two numbers or strings");
+            break;
+        case Token::Type::Minus:        m_result = number(lhs) -  number(rhs); break;
+        case Token::Type::Star:         m_result = number(lhs) *  number(rhs); break;
+        case Token::Type::Slash:        m_result = number(lhs) /  number(rhs); break;
+        case Token::Type::Greater:      m_result = number(lhs) >  number(rhs); break;
+        case Token::Type::GreaterEqual: m_result = number(lhs) >= number(rhs); break;
+        case Token::Type::Less:         m_result = number(lhs) <  number(rhs); break;
+        case Token::Type::LessEqual:    m_result = number(lhs) <= number(rhs); break;
+        default: throw RuntimeError(expr.op, "unrecognized binary operator: '" + expr.op.lexeme + "'");
+    }
 }
 
 auto loxe::Interpreter::visit(const ast::BooleanExpr& expr) -> void
