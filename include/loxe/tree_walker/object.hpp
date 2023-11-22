@@ -44,6 +44,8 @@ namespace loxe
         [[nodiscard]] constexpr auto operator==(const Object& other) const -> bool = default;
         [[nodiscard]] constexpr auto operator!=(const Object& other) const -> bool = default;
 
+        [[nodiscard]] auto stringify() const -> std::string;
+
     private:
         value_type m_value;
     };

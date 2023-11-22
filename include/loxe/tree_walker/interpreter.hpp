@@ -15,6 +15,7 @@ namespace loxe
         Interpreter();
 
         auto interpret(const ast::expr_ptr& expr) -> void;
+        auto evaluate (const ast::expr_ptr& expr) -> Object&;
 
     private:
         auto visit(const ast::BinaryExpr&   expr) -> void override;
