@@ -9,13 +9,17 @@ auto loxe::Interpreter::interpret(const ast::stmt_ptr& stmt) -> void
 {
     try
     {
-        utility::ignore(stmt);
-        // utility::println("{}", evaluate(expr).stringify());
+        execute(stmt);
     }
     catch (const Exception& e)
     {
         utility::println(std::cerr, "{}", e.what());
     }
+}
+
+auto loxe::Interpreter::execute(const ast::stmt_ptr& stmt) -> void
+{
+    if (stmt) stmt->accept(*this);
 }
 
 auto loxe::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object&
@@ -24,6 +28,11 @@ auto loxe::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object&
     else      m_result = Object();
 
     return m_result;
+}
+
+auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
+{
+    evaluate(stmt.expression);
 }
 
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void

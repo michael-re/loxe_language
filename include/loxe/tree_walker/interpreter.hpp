@@ -10,15 +10,18 @@
 
 namespace loxe
 {
-    class Interpreter : public ast::Expr::Visitor
+    class Interpreter : public ast::Expr::Visitor, public ast::Stmt::Visitor
     {
     public:
         Interpreter();
 
         auto interpret(const ast::stmt_ptr& stmt) -> void;
+        auto execute  (const ast::stmt_ptr& stmt) -> void;
         auto evaluate (const ast::expr_ptr& expr) -> Object&;
 
     private:
+        auto visit(const ast::ExpressionStmt& stmt) -> void override;
+
         auto visit(const ast::BinaryExpr&   expr) -> void override;
         auto visit(const ast::BooleanExpr&  expr) -> void override;
         auto visit(const ast::GroupingExpr& expr) -> void override;
