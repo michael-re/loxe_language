@@ -13,10 +13,15 @@ loxe::Parser::ParseError::ParseError(Token token, std::string message)
         m_message = utility::as_string(format_2, this->token.line, this->token.column, std::move(message), this->token.lexeme);
 }
 
-auto loxe::Parser::parse(std::string source) -> ast::stmt_ptr
+auto loxe::Parser::parse(std::string source) -> ast::stmt_list
 {
     m_lexer = Lexer(std::move(source)).lex();
-    return parse_declaration();
+
+    auto ast = ast::stmt_list();
+    while (!at_end())
+        ast.emplace_back(parse_declaration());
+
+    return ast;
 }
 
 auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
@@ -162,12 +167,12 @@ auto loxe::Parser::previous() const -> Token
 
 auto loxe::Parser::next() -> Token
 {
-    return m_lexer.lex().peek_curr();
+    return m_lexer.lex().peek_prev();
 }
 
 auto loxe::Parser::consume(Token::Type type, std::string msg) -> Token
 {
-    if (match(type)) return current();
+    if (check(type)) return next();
     throw error(current(), std::move(msg));
     return {}; // unreachable
 }

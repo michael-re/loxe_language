@@ -23,7 +23,7 @@ namespace loxe
         };
 
     public:
-        [[nodiscard]] auto parse(std::string source) -> ast::stmt_ptr;
+        [[nodiscard]] auto parse(std::string source) -> ast::stmt_list;
 
     private:
         [[nodiscard]] auto parse_declaration() -> ast::stmt_ptr;

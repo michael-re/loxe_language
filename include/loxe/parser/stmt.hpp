@@ -4,13 +4,15 @@
 #define LOXE_PARSER_STMT_HPP
 
 #include <memory>
+#include <vector>
 
 #include "expr.hpp"
 #include "token.hpp"
 
 namespace loxe::ast
 {
-    using stmt_ptr = std::unique_ptr<struct Stmt>;
+    using stmt_ptr  = std::unique_ptr<struct Stmt>;
+    using stmt_list = std::vector<stmt_ptr>;
 
     struct Stmt
     {

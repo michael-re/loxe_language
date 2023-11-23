@@ -15,9 +15,9 @@ namespace loxe
     public:
         Interpreter();
 
-        auto interpret(const ast::stmt_ptr& stmt) -> void;
-        auto execute  (const ast::stmt_ptr& stmt) -> void;
-        auto evaluate (const ast::expr_ptr& expr) -> Object&;
+        auto interpret(const ast::stmt_list& program) -> void;
+        auto execute  (const ast::stmt_ptr&  stmt)    -> void;
+        auto evaluate (const ast::expr_ptr&  expr)    -> Object&;
 
     private:
         auto visit(const ast::ExpressionStmt& stmt) -> void override;
