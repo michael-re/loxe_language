@@ -15,11 +15,15 @@ loxe::Parser::ParseError::ParseError(Token token, std::string message)
 
 auto loxe::Parser::parse(std::string source) -> ast::stmt_list
 {
+    m_error = false;
     m_lexer = Lexer(std::move(source)).lex();
 
     auto ast = ast::stmt_list();
     while (!at_end())
         ast.emplace_back(parse_declaration());
+
+    if (m_error)
+        ast.clear();
 
     return ast;
 }
@@ -33,6 +37,7 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
     catch (const ParseError& e)
     {
         utility::println(std::cerr, "{}", e.what());
+        synchronize();
         return {};
     }
 }
@@ -177,7 +182,28 @@ auto loxe::Parser::consume(Token::Type type, std::string msg) -> Token
     return {}; // unreachable
 }
 
-auto loxe::Parser::error(Token token, std::string msg) const -> ParseError
+auto loxe::Parser::error(Token token, std::string msg) -> ParseError
 {
+    m_error = true;
     return ParseError(std::move(token), std::move(msg));
+}
+
+auto loxe::Parser::synchronize() -> void
+{
+    utility::ignore(next());
+    while (!at_end() && previous().type != Token::Type::Semicolon)
+    {
+        switch (current().type)
+        {
+            case Token::Type::Class:
+            case Token::Type::Fun:
+            case Token::Type::Var:
+            case Token::Type::If:
+            case Token::Type::For:
+            case Token::Type::While:
+            case Token::Type::Print:
+            case Token::Type::Return: return;
+            default: utility::ignore(next());
+        }
+    }
 }

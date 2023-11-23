@@ -47,11 +47,13 @@ namespace loxe
         [[nodiscard]] auto next()           -> Token;
 
     private:
-        auto consume(Token::Type type, std::string msg)  -> Token;
-        auto error  (Token token, std::string msg) const -> ParseError;
+        auto consume(Token::Type type, std::string msg) -> Token;
+        auto error(Token token, std::string msg)        -> ParseError;
+        auto synchronize()                              -> void;
 
     private:
-        Lexer m_lexer;
+        bool  m_error = false;
+        Lexer m_lexer = {};
     };
 } // namespace loxe
 
