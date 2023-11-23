@@ -4,6 +4,7 @@
 #define LOXE_TREE_WALKER_INTERPRETER_HPP
 
 #include "loxe/parser/expr.hpp"
+#include "loxe/parser/stmt.hpp"
 
 #include "object.hpp"
 
@@ -14,7 +15,7 @@ namespace loxe
     public:
         Interpreter();
 
-        auto interpret(const ast::expr_ptr& expr) -> void;
+        auto interpret(const ast::stmt_ptr& stmt) -> void;
         auto evaluate (const ast::expr_ptr& expr) -> Object&;
 
     private:

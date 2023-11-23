@@ -5,11 +5,12 @@
 loxe::Interpreter::Interpreter()
     : m_result() {}
 
-auto loxe::Interpreter::interpret(const ast::expr_ptr& expr) -> void
+auto loxe::Interpreter::interpret(const ast::stmt_ptr& stmt) -> void
 {
     try
     {
-        utility::println("{}", evaluate(expr).stringify());
+        utility::ignore(stmt);
+        // utility::println("{}", evaluate(expr).stringify());
     }
     catch (const Exception& e)
     {

@@ -6,6 +6,7 @@
 #include "loxe/common/except.hpp"
 
 #include "expr.hpp"
+#include "stmt.hpp"
 #include "lexer.hpp"
 #include "token.hpp"
 
@@ -22,9 +23,13 @@ namespace loxe
         };
 
     public:
-        [[nodiscard]] auto parse(std::string source) -> ast::expr_ptr;
+        [[nodiscard]] auto parse(std::string source) -> ast::stmt_ptr;
 
     private:
+        [[nodiscard]] auto parse_declaration() -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_statement()   -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_expr_stmt()   -> ast::stmt_ptr;
+
         [[nodiscard]] auto parse_expression() -> ast::expr_ptr;
         [[nodiscard]] auto parse_equality()   -> ast::expr_ptr;
         [[nodiscard]] auto parse_comparison() -> ast::expr_ptr;

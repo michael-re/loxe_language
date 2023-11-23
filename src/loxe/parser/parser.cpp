@@ -13,18 +13,35 @@ loxe::Parser::ParseError::ParseError(Token token, std::string message)
         m_message = utility::as_string(format_2, this->token.line, this->token.column, std::move(message), this->token.lexeme);
 }
 
-auto loxe::Parser::parse(std::string source) -> ast::expr_ptr
+auto loxe::Parser::parse(std::string source) -> ast::stmt_ptr
+{
+    m_lexer = Lexer(std::move(source)).lex();
+    return parse_declaration();
+}
+
+auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 {
     try
     {
-        m_lexer = Lexer(std::move(source)).lex();
-        return parse_expression();
+        return parse_statement();
     }
     catch (const ParseError& e)
     {
         utility::println(std::cerr, "{}", e.what());
         return {};
     }
+}
+
+auto loxe::Parser::parse_statement() -> ast::stmt_ptr
+{
+    return parse_expr_stmt();
+}
+
+auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr
+{
+    auto expr = parse_expression();
+    consume(Token::Type::Semicolon, "expect ';' after expression statement");
+    return std::make_unique<ast::ExpressionStmt>(std::move(expr));
 }
 
 auto loxe::Parser::parse_expression() -> ast::expr_ptr
