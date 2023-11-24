@@ -54,7 +54,7 @@ auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr
 {
     auto expr = parse_expression();
     consume(Token::Type::Semicolon, "expect ';' after expression statement");
-    return std::make_unique<ast::ExpressionStmt>(std::move(expr));
+    return ast::ExpressionStmt::make(std::move(expr));
 }
 
 auto loxe::Parser::parse_expression() -> ast::expr_ptr
@@ -69,7 +69,7 @@ auto loxe::Parser::parse_equality() -> ast::expr_ptr
     {
         auto op  = previous();
         auto rhs = parse_comparison();
-        expr = std::make_unique<ast::BinaryExpr>(std::move(op), std::move(expr), std::move(rhs));
+        expr = ast::BinaryExpr::make(std::move(op), std::move(expr), std::move(rhs));
     }
 
     return expr;
@@ -83,7 +83,7 @@ auto loxe::Parser::parse_comparison() -> ast::expr_ptr
     {
         auto op  = previous();
         auto rhs = parse_term();
-        expr = std::make_unique<ast::BinaryExpr>(std::move(op), std::move(expr), std::move(rhs));
+        expr = ast::BinaryExpr::make(std::move(op), std::move(expr), std::move(rhs));
     }
 
     return expr;
@@ -96,7 +96,7 @@ auto loxe::Parser::parse_term() -> ast::expr_ptr
     {
         auto op  = previous();
         auto rhs = parse_factor();
-        expr = std::make_unique<ast::BinaryExpr>(std::move(op), std::move(expr), std::move(rhs));
+        expr = ast::BinaryExpr::make(std::move(op), std::move(expr), std::move(rhs));
     }
 
     return expr;
@@ -109,7 +109,7 @@ auto loxe::Parser::parse_factor() -> ast::expr_ptr
     {
         auto op  = previous();
         auto rhs = parse_unary();
-        expr = std::make_unique<ast::BinaryExpr>(std::move(op), std::move(expr), std::move(rhs));
+        expr = ast::BinaryExpr::make(std::move(op), std::move(expr), std::move(rhs));
     }
 
     return expr;
@@ -121,7 +121,7 @@ auto loxe::Parser::parse_unary() -> ast::expr_ptr
     {
         auto op      = previous();
         auto operand = parse_unary();
-        return std::make_unique<ast::UnaryExpr>(std::move(op), std::move(operand));
+        return ast::UnaryExpr::make(std::move(op), std::move(operand));
     }
 
     return parse_primary();
@@ -129,17 +129,17 @@ auto loxe::Parser::parse_unary() -> ast::expr_ptr
 
 auto loxe::Parser::parse_primary() -> ast::expr_ptr
 {
-    if (match(Token::Type::Nil))    return std::make_unique<ast::NilExpr>(previous());
-    if (match(Token::Type::True))   return std::make_unique<ast::BooleanExpr>(previous());
-    if (match(Token::Type::False))  return std::make_unique<ast::BooleanExpr>(previous());
-    if (match(Token::Type::Number)) return std::make_unique<ast::NumberExpr>(previous());
-    if (match(Token::Type::String)) return std::make_unique<ast::StringExpr>(previous());
+    if (match(Token::Type::Nil))    return ast::NilExpr::make(previous());
+    if (match(Token::Type::True))   return ast::BooleanExpr::make(previous());
+    if (match(Token::Type::False))  return ast::BooleanExpr::make(previous());
+    if (match(Token::Type::Number)) return ast::NumberExpr::make(previous());
+    if (match(Token::Type::String)) return ast::StringExpr::make(previous());
 
     if (match(Token::Type::LeftParen))
     {
         auto expr = parse_expression();
         consume(Token::Type::RightParen, "expect ')' after grouping expression");
-        return std::make_unique<ast::GroupingExpr>(std::move(expr));
+        return ast::GroupingExpr::make(std::move(expr));
     }
 
     throw error(current(), "expect expression");

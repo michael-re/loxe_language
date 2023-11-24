@@ -33,6 +33,12 @@ namespace loxe::ast
         {
             return visitor.visit(*static_cast<const Derived*>(this));
         };
+
+        template<typename... Args>
+        [[nodiscard]] static auto make(Args&&... args) -> stmt_ptr
+        {
+            return std::make_unique<Derived>(std::forward<Args>(args)...);
+        }
     };
 
     struct ExpressionStmt final : public StmtCRTP<ExpressionStmt>
