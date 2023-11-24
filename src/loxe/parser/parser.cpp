@@ -20,7 +20,10 @@ auto loxe::Parser::parse(std::string source) -> ast::stmt_list
 
     auto ast = ast::stmt_list();
     while (!at_end())
+    {
+        if (match(Token::Type::Semicolon)) continue;
         ast.emplace_back(parse_declaration());
+    }
 
     if (m_error)
         ast.clear();
