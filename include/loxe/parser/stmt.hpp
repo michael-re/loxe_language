@@ -20,6 +20,7 @@ namespace loxe::ast
         {
             virtual ~Visitor() = default;
             virtual auto visit(const struct ExpressionStmt&) -> void = 0;
+            virtual auto visit(const struct PrintStmt&)      -> void = 0;
         };
 
         virtual ~Stmt() = default;
@@ -44,6 +45,14 @@ namespace loxe::ast
     struct ExpressionStmt final : public StmtCRTP<ExpressionStmt>
     {
         ExpressionStmt(expr_ptr expression)
+            : expression(std::move(expression)) {}
+
+        expr_ptr expression;
+    };
+
+    struct PrintStmt final : public StmtCRTP<PrintStmt>
+    {
+        PrintStmt(expr_ptr expression)
             : expression(std::move(expression)) {}
 
         expr_ptr expression;

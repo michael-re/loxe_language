@@ -36,6 +36,11 @@ auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
     evaluate(stmt.expression);
 }
 
+auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
+{
+    utility::println("{}", evaluate(stmt.expression).stringify());
+}
+
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void
 {
     auto number = [&expr](const Object& object) -> Object::number {

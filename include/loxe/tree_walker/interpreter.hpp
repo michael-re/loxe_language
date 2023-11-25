@@ -21,6 +21,7 @@ namespace loxe
 
     private:
         auto visit(const ast::ExpressionStmt& stmt) -> void override;
+        auto visit(const ast::PrintStmt&      stmt) -> void override;
 
         auto visit(const ast::BinaryExpr&   expr) -> void override;
         auto visit(const ast::BooleanExpr&  expr) -> void override;

@@ -47,6 +47,7 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_statement() -> ast::stmt_ptr
 {
+    if (match(Token::Type::Print)) return parse_print_stmt();
     return parse_expr_stmt();
 }
 
@@ -55,6 +56,13 @@ auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr
     auto expr = parse_expression();
     consume(Token::Type::Semicolon, "expect ';' after expression statement");
     return ast::ExpressionStmt::make(std::move(expr));
+}
+
+auto loxe::Parser::parse_print_stmt() -> ast::stmt_ptr
+{
+    auto expr = parse_expression();
+    consume(Token::Type::Semicolon, "expect ';' after print statement");
+    return ast::PrintStmt::make(std::move(expr));
 }
 
 auto loxe::Parser::parse_expression() -> ast::expr_ptr
