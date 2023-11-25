@@ -3,6 +3,7 @@
 #ifndef LOXE_TREE_WALKER_ERROR_HPP
 #define LOXE_TREE_WALKER_ERROR_HPP
 
+#include "loxe/common/utility.hpp"
 #include "loxe/common/except.hpp"
 #include "loxe/parser/token.hpp"
 
