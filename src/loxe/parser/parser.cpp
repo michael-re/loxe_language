@@ -35,6 +35,7 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 {
     try
     {
+        if (match(Token::Type::Var)) return parse_var_stmt();
         return parse_statement();
     }
     catch (const ParseError& e)
@@ -63,6 +64,14 @@ auto loxe::Parser::parse_print_stmt() -> ast::stmt_ptr
     auto expr = parse_expression();
     consume(Token::Type::Semicolon, "expect ';' after print statement");
     return ast::PrintStmt::make(std::move(expr));
+}
+
+auto loxe::Parser::parse_var_stmt() -> ast::stmt_ptr
+{
+    auto name        = consume(Token::Type::Identifier, "expect variable name");
+    auto initializer = match(Token::Type::Equal) ? parse_expression() : nullptr;
+    consume(Token::Type::Semicolon, "expect ';' after variable declaration");
+    return ast::VariableStmt::make(std::move(name), std::move(initializer));
 }
 
 auto loxe::Parser::parse_expression() -> ast::expr_ptr
@@ -137,11 +146,12 @@ auto loxe::Parser::parse_unary() -> ast::expr_ptr
 
 auto loxe::Parser::parse_primary() -> ast::expr_ptr
 {
-    if (match(Token::Type::Nil))    return ast::NilExpr::make(previous());
-    if (match(Token::Type::True))   return ast::BooleanExpr::make(previous());
-    if (match(Token::Type::False))  return ast::BooleanExpr::make(previous());
-    if (match(Token::Type::Number)) return ast::NumberExpr::make(previous());
-    if (match(Token::Type::String)) return ast::StringExpr::make(previous());
+    if (match(Token::Type::Nil))        return ast::NilExpr::make(previous());
+    if (match(Token::Type::True))       return ast::BooleanExpr::make(previous());
+    if (match(Token::Type::False))      return ast::BooleanExpr::make(previous());
+    if (match(Token::Type::Number))     return ast::NumberExpr::make(previous());
+    if (match(Token::Type::String))     return ast::StringExpr::make(previous());
+    if (match(Token::Type::Identifier)) return ast::VariableExpr::make(previous());
 
     if (match(Token::Type::LeftParen))
     {

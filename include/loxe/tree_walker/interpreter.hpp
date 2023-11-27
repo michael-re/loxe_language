@@ -7,6 +7,7 @@
 #include "loxe/parser/stmt.hpp"
 
 #include "object.hpp"
+#include "environment.hpp"
 
 namespace loxe
 {
@@ -22,6 +23,7 @@ namespace loxe
     private:
         auto visit(const ast::ExpressionStmt& stmt) -> void override;
         auto visit(const ast::PrintStmt&      stmt) -> void override;
+        auto visit(const ast::VariableStmt&   stmt) -> void override;
 
         auto visit(const ast::BinaryExpr&   expr) -> void override;
         auto visit(const ast::BooleanExpr&  expr) -> void override;
@@ -30,9 +32,11 @@ namespace loxe
         auto visit(const ast::NumberExpr&   expr) -> void override;
         auto visit(const ast::StringExpr&   expr) -> void override;
         auto visit(const ast::UnaryExpr&    expr) -> void override;
+        auto visit(const ast::VariableExpr& expr) -> void override;
 
     private:
-        Object m_result;
+        Object      m_result;
+        Environment m_environment;
     };
 } // namespace loxe
 

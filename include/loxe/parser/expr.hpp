@@ -24,6 +24,7 @@ namespace loxe::ast
             virtual auto visit(const struct NumberExpr&)   -> void = 0;
             virtual auto visit(const struct StringExpr&)   -> void = 0;
             virtual auto visit(const struct UnaryExpr&)    -> void = 0;
+            virtual auto visit(const struct VariableExpr&) -> void = 0;
         };
 
         virtual ~Expr() = default;
@@ -104,6 +105,14 @@ namespace loxe::ast
 
         Token    op;
         expr_ptr operand;
+    };
+
+    struct VariableExpr final : public ExprCRTP<VariableExpr>
+    {
+        VariableExpr(Token name)
+            : name(std::move(name)) {}
+
+        Token name;
     };
 } // namespace loxe::ast
 

@@ -3,7 +3,7 @@
 #include "loxe/tree_walker/interpreter.hpp"
 
 loxe::Interpreter::Interpreter()
-    : m_result() {}
+    : m_result(), m_environment() {}
 
 auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
 {
@@ -39,6 +39,12 @@ auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
 auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
 {
     utility::println("{}", evaluate(stmt.expression).stringify());
+}
+
+auto loxe::Interpreter::visit(const ast::VariableStmt& stmt) -> void
+{
+    auto value = stmt.initializer ? evaluate(stmt.initializer) : Object();
+    m_environment.define(stmt.name, std::move(value));
 }
 
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void
@@ -126,4 +132,9 @@ auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> void
             throw RuntimeError(expr.op, "invalid unary operator");
             break;
     }
+}
+
+auto loxe::Interpreter::visit(const ast::VariableExpr& expr) -> void
+{
+    m_result = m_environment.get(expr.name);
 }

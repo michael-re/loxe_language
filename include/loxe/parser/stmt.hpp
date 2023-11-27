@@ -21,6 +21,7 @@ namespace loxe::ast
             virtual ~Visitor() = default;
             virtual auto visit(const struct ExpressionStmt&) -> void = 0;
             virtual auto visit(const struct PrintStmt&)      -> void = 0;
+            virtual auto visit(const struct VariableStmt&)   -> void = 0;
         };
 
         virtual ~Stmt() = default;
@@ -56,6 +57,15 @@ namespace loxe::ast
             : expression(std::move(expression)) {}
 
         expr_ptr expression;
+    };
+
+    struct VariableStmt final : public StmtCRTP<VariableStmt>
+    {
+        VariableStmt(Token name, expr_ptr initializer)
+            : name(std::move(name)), initializer(std::move(initializer)) {}
+
+        Token    name;
+        expr_ptr initializer; 
     };
 } // namespace loxe::ast
 
