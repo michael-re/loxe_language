@@ -17,6 +17,7 @@ namespace loxe
 
     public:
         auto define(const class Token& name, Object value) -> void;
+        auto assign(const class Token& name, Object value) -> Object&;
         auto get   (const class Token& name)               -> Object&;
 
     private:

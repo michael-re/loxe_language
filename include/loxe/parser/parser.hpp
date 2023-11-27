@@ -33,6 +33,7 @@ namespace loxe
         [[nodiscard]] auto parse_var_stmt()    -> ast::stmt_ptr;
 
         [[nodiscard]] auto parse_expression() -> ast::expr_ptr;
+        [[nodiscard]] auto parse_assignment() -> ast::expr_ptr;
         [[nodiscard]] auto parse_equality()   -> ast::expr_ptr;
         [[nodiscard]] auto parse_comparison() -> ast::expr_ptr;
         [[nodiscard]] auto parse_term()       -> ast::expr_ptr;

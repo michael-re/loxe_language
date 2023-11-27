@@ -76,7 +76,23 @@ auto loxe::Parser::parse_var_stmt() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_expression() -> ast::expr_ptr
 {
-    return parse_equality();
+    return parse_assignment();
+}
+
+auto loxe::Parser::parse_assignment() -> ast::expr_ptr
+{
+    auto expr = parse_equality();
+    if (match(Token::Type::Equal))
+    {
+        auto equals = previous();
+        auto value  = parse_assignment();
+        if (auto var = dynamic_cast<ast::VariableExpr*>(expr.get()))
+            return ast::AssignExpr::make(var->name, std::move(value));
+
+        throw error(equals, "invalid assignment target");
+    }
+
+    return expr;
 }
 
 auto loxe::Parser::parse_equality() -> ast::expr_ptr

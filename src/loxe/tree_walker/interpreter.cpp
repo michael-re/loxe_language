@@ -47,6 +47,11 @@ auto loxe::Interpreter::visit(const ast::VariableStmt& stmt) -> void
     m_environment.define(stmt.name, std::move(value));
 }
 
+auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> void
+{
+    m_result = m_environment.assign(expr.name, evaluate(expr.value));
+}
+
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void
 {
     auto number = [&expr](const Object& object) -> Object::number {

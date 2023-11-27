@@ -17,6 +17,7 @@ namespace loxe::ast
         struct Visitor
         {
             virtual ~Visitor() = default;
+            virtual auto visit(const struct AssignExpr&)   -> void = 0;
             virtual auto visit(const struct BinaryExpr&)   -> void = 0;
             virtual auto visit(const struct BooleanExpr&)  -> void = 0;
             virtual auto visit(const struct GroupingExpr&) -> void = 0;
@@ -44,6 +45,15 @@ namespace loxe::ast
         {
             return std::make_unique<Derived>(std::forward<Args>(args)...);
         }
+    };
+
+    struct AssignExpr final : public ExprCRTP<AssignExpr>
+    {
+        AssignExpr(Token name, expr_ptr value)
+            : name(std::move(name)), value(std::move(value)) {}
+
+        Token    name;
+        expr_ptr value;
     };
 
     struct BinaryExpr final : public ExprCRTP<BinaryExpr>
