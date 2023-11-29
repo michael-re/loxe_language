@@ -59,6 +59,14 @@ auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
     evaluate(stmt.expression);
 }
 
+auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
+{
+    if (evaluate(stmt.condition).is_truthy())
+        execute(stmt.then_branch);
+    else if (stmt.else_branch)
+        execute(stmt.then_branch);
+}
+
 auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
 {
     utility::println("{}", evaluate(stmt.expression).stringify());

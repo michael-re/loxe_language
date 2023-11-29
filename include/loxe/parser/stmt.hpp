@@ -21,6 +21,7 @@ namespace loxe::ast
             virtual ~Visitor() = default;
             virtual auto visit(const struct BlockStmt&)      -> void = 0;
             virtual auto visit(const struct ExpressionStmt&) -> void = 0;
+            virtual auto visit(const struct IfStmt&)         -> void = 0;
             virtual auto visit(const struct PrintStmt&)      -> void = 0;
             virtual auto visit(const struct VariableStmt&)   -> void = 0;
         };
@@ -58,6 +59,16 @@ namespace loxe::ast
             : expression(std::move(expression)) {}
 
         expr_ptr expression;
+    };
+
+    struct IfStmt final : public StmtCRTP<IfStmt>
+    {
+        IfStmt(expr_ptr condition, stmt_ptr then_branch, stmt_ptr else_branch)
+            : condition(std::move(condition)), then_branch(std::move(then_branch)), else_branch(std::move(else_branch)) {}
+
+        expr_ptr condition;
+        stmt_ptr then_branch;
+        stmt_ptr else_branch;
     };
 
     struct PrintStmt final : public StmtCRTP<PrintStmt>

@@ -48,6 +48,7 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_statement() -> ast::stmt_ptr
 {
+    if (match(Token::Type::If))        return parse_if_stmt();
     if (match(Token::Type::LeftBrace)) return parse_block_stmt();
     if (match(Token::Type::Print))     return parse_print_stmt();
     return parse_expr_stmt();
@@ -68,6 +69,16 @@ auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr
     auto expr = parse_expression();
     consume(Token::Type::Semicolon, "expect ';' after expression statement");
     return ast::ExpressionStmt::make(std::move(expr));
+}
+
+auto loxe::Parser::parse_if_stmt() -> ast::stmt_ptr
+{
+    consume(Token::Type::LeftParen, "expect '(' after 'if'");
+    auto condition = parse_expression();
+    consume(Token::Type::RightParen, "expect ')' after 'if' condition");
+    auto then_branch = parse_statement();
+    auto else_branch = match(Token::Type::Else) ? parse_statement() : nullptr;
+    return ast::IfStmt::make(std::move(condition), std::move(then_branch), std::move(else_branch));
 }
 
 auto loxe::Parser::parse_print_stmt() -> ast::stmt_ptr
