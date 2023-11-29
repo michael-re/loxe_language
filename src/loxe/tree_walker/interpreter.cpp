@@ -3,7 +3,7 @@
 #include "loxe/tree_walker/interpreter.hpp"
 
 loxe::Interpreter::Interpreter()
-    : m_result(), m_environment() {}
+    : m_result(), m_environment(std::make_shared<Environment>()) {}
 
 auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
 {
@@ -18,17 +18,40 @@ auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
     }
 }
 
-auto loxe::Interpreter::execute(const ast::stmt_ptr& stmt) -> void
-{
-    if (stmt) stmt->accept(*this);
-}
-
 auto loxe::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object&
 {
     if (expr) expr->accept(*this);
     else      m_result = Object();
 
     return m_result;
+}
+
+auto loxe::Interpreter::execute(const ast::stmt_ptr& stmt) -> void
+{
+    if (stmt) stmt->accept(*this);
+}
+
+auto loxe::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> void
+{
+    auto previous = std::move(m_environment);
+    try
+    {
+        m_environment = std::move(env);
+        for (const auto& stmt : stmts)
+            execute(stmt);
+
+        m_environment = std::move(previous);
+    }
+    catch (const RuntimeError& e)
+    {
+        m_environment = std::move(previous);
+        throw e;
+    }
+}
+
+auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
+{
+    execute(stmt.statements, std::make_shared<Environment>(m_environment.get()));
 }
 
 auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
@@ -44,12 +67,12 @@ auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
 auto loxe::Interpreter::visit(const ast::VariableStmt& stmt) -> void
 {
     auto value = stmt.initializer ? evaluate(stmt.initializer) : Object();
-    m_environment.define(stmt.name, std::move(value));
+    m_environment->define(stmt.name, std::move(value));
 }
 
 auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> void
 {
-    m_result = m_environment.assign(expr.name, evaluate(expr.value));
+    m_result = m_environment->assign(expr.name, evaluate(expr.value));
 }
 
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void
@@ -141,5 +164,5 @@ auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> void
 
 auto loxe::Interpreter::visit(const ast::VariableExpr& expr) -> void
 {
-    m_result = m_environment.get(expr.name);
+    m_result = m_environment->get(expr.name);
 }

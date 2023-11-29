@@ -14,6 +14,7 @@ auto loxe::Environment::assign(const Token& name, Object value) -> Object&
 {
     const auto& id = name.lexeme;
     if (m_values.contains(id)) return (m_values[id] = std::move(value));
+    if (m_enclosing)           return m_enclosing->assign(name, std::move(value));
     throw RuntimeError(name, "'" + id + "' is an undefined symbol");
 }
 
@@ -21,5 +22,6 @@ auto loxe::Environment::get(const Token& name) -> Object&
 {
     const auto& id = name.lexeme;
     if (m_values.contains(id)) return m_values[id];
+    if (m_enclosing)           return m_enclosing->get(name);
     throw RuntimeError(name, "'" + id + "' is an undefined symbol");
 }

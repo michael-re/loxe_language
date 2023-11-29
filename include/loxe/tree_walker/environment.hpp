@@ -16,12 +16,16 @@ namespace loxe
         using value_map = std::unordered_map<std::string, Object>;
 
     public:
+        Environment(Environment* enclosing = nullptr)
+            : m_enclosing(enclosing), m_values({}) {}
+
         auto define(const class Token& name, Object value) -> void;
         auto assign(const class Token& name, Object value) -> Object&;
         auto get   (const class Token& name)               -> Object&;
 
     private:
-        value_map m_values;
+        Environment* m_enclosing;
+        value_map    m_values;
     };
 } // namespace loxe
 

@@ -19,6 +19,7 @@ namespace loxe::ast
         struct Visitor
         {
             virtual ~Visitor() = default;
+            virtual auto visit(const struct BlockStmt&)      -> void = 0;
             virtual auto visit(const struct ExpressionStmt&) -> void = 0;
             virtual auto visit(const struct PrintStmt&)      -> void = 0;
             virtual auto visit(const struct VariableStmt&)   -> void = 0;
@@ -41,6 +42,14 @@ namespace loxe::ast
         {
             return std::make_unique<Derived>(std::forward<Args>(args)...);
         }
+    };
+
+    struct BlockStmt final : public StmtCRTP<BlockStmt>
+    {
+        BlockStmt(stmt_list statements)
+            : statements(std::move(statements)) {}
+
+        stmt_list statements;
     };
 
     struct ExpressionStmt final : public StmtCRTP<ExpressionStmt>

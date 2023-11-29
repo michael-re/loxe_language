@@ -28,6 +28,7 @@ namespace loxe
     private:
         [[nodiscard]] auto parse_declaration() -> ast::stmt_ptr;
         [[nodiscard]] auto parse_statement()   -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_block_stmt()  -> ast::stmt_ptr;
         [[nodiscard]] auto parse_expr_stmt()   -> ast::stmt_ptr;
         [[nodiscard]] auto parse_print_stmt()  -> ast::stmt_ptr;
         [[nodiscard]] auto parse_var_stmt()    -> ast::stmt_ptr;

@@ -48,8 +48,19 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_statement() -> ast::stmt_ptr
 {
-    if (match(Token::Type::Print)) return parse_print_stmt();
+    if (match(Token::Type::LeftBrace)) return parse_block_stmt();
+    if (match(Token::Type::Print))     return parse_print_stmt();
     return parse_expr_stmt();
+}
+
+auto loxe::Parser::parse_block_stmt() -> ast::stmt_ptr
+{
+    auto statements = ast::stmt_list();
+    while (!at_end() && !check(Token::Type::RightBrace))
+        statements.emplace_back(parse_declaration());
+
+    consume(Token::Type::RightBrace, "expect '}' after block");
+    return ast::BlockStmt::make(std::move(statements));
 }
 
 auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr
