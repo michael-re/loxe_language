@@ -34,14 +34,16 @@ namespace loxe
         [[nodiscard]] auto parse_print_stmt()  -> ast::stmt_ptr;
         [[nodiscard]] auto parse_var_stmt()    -> ast::stmt_ptr;
 
-        [[nodiscard]] auto parse_expression() -> ast::expr_ptr;
-        [[nodiscard]] auto parse_assignment() -> ast::expr_ptr;
-        [[nodiscard]] auto parse_equality()   -> ast::expr_ptr;
-        [[nodiscard]] auto parse_comparison() -> ast::expr_ptr;
-        [[nodiscard]] auto parse_term()       -> ast::expr_ptr;
-        [[nodiscard]] auto parse_factor()     -> ast::expr_ptr;
-        [[nodiscard]] auto parse_unary()      -> ast::expr_ptr;
-        [[nodiscard]] auto parse_primary()    -> ast::expr_ptr;
+        [[nodiscard]] auto parse_expression()  -> ast::expr_ptr;
+        [[nodiscard]] auto parse_assignment()  -> ast::expr_ptr;
+        [[nodiscard]] auto parse_logical_or()  -> ast::expr_ptr;
+        [[nodiscard]] auto parse_logical_and() -> ast::expr_ptr;
+        [[nodiscard]] auto parse_equality()    -> ast::expr_ptr;
+        [[nodiscard]] auto parse_comparison()  -> ast::expr_ptr;
+        [[nodiscard]] auto parse_term()        -> ast::expr_ptr;
+        [[nodiscard]] auto parse_factor()      -> ast::expr_ptr;
+        [[nodiscard]] auto parse_unary()       -> ast::expr_ptr;
+        [[nodiscard]] auto parse_primary()     -> ast::expr_ptr;
 
         [[nodiscard]] auto check(Token::Type type) const -> bool;
         [[nodiscard]] auto match(Token::Type type)       -> bool;

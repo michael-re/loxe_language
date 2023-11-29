@@ -103,7 +103,7 @@ auto loxe::Parser::parse_expression() -> ast::expr_ptr
 
 auto loxe::Parser::parse_assignment() -> ast::expr_ptr
 {
-    auto expr = parse_equality();
+    auto expr = parse_logical_or();
     if (match(Token::Type::Equal))
     {
         auto equals = previous();
@@ -112,6 +112,32 @@ auto loxe::Parser::parse_assignment() -> ast::expr_ptr
             return ast::AssignExpr::make(var->name, std::move(value));
 
         throw error(equals, "invalid assignment target");
+    }
+
+    return expr;
+}
+
+auto loxe::Parser::parse_logical_or() -> ast::expr_ptr
+{
+    auto expr = parse_logical_and();
+    while (match(Token::Type::Or))
+    {
+        auto op  = previous();
+        auto rhs = parse_logical_and();
+        expr = ast::LogicalExpr::make(std::move(op), std::move(expr), std::move(rhs));
+    }
+
+    return expr;
+}
+
+auto loxe::Parser::parse_logical_and() -> ast::expr_ptr
+{
+    auto expr = parse_equality();
+    while (match(Token::Type::And))
+    {
+        auto op  = previous();
+        auto rhs = parse_equality();
+        expr = ast::LogicalExpr::make(std::move(op), std::move(expr), std::move(rhs));
     }
 
     return expr;

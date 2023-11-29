@@ -21,6 +21,7 @@ namespace loxe::ast
             virtual auto visit(const struct BinaryExpr&)   -> void = 0;
             virtual auto visit(const struct BooleanExpr&)  -> void = 0;
             virtual auto visit(const struct GroupingExpr&) -> void = 0;
+            virtual auto visit(const struct LogicalExpr&)  -> void = 0;
             virtual auto visit(const struct NilExpr&)      -> void = 0;
             virtual auto visit(const struct NumberExpr&)   -> void = 0;
             virtual auto visit(const struct StringExpr&)   -> void = 0;
@@ -81,6 +82,16 @@ namespace loxe::ast
             : expression(std::move(expression)) {}
 
         expr_ptr expression;
+    };
+
+    struct LogicalExpr final : public ExprCRTP<LogicalExpr>
+    {
+        LogicalExpr(Token op, expr_ptr lhs, expr_ptr rhs)
+            : op(std::move(op)), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+
+        Token    op;
+        expr_ptr lhs;
+        expr_ptr rhs;
     };
 
     struct NilExpr final : public ExprCRTP<NilExpr>

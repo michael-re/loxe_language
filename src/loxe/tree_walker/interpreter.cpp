@@ -131,8 +131,15 @@ auto loxe::Interpreter::visit(const ast::BooleanExpr& expr) -> void
 
 auto loxe::Interpreter::visit(const ast::GroupingExpr& expr) -> void
 {
-    auto result = std::move(evaluate(expr.expression));
-    m_result    = std::move(result);
+    evaluate(expr.expression);
+}
+
+auto loxe::Interpreter::visit(const ast::LogicalExpr& expr) -> void
+{
+    auto &lhs = evaluate(expr.lhs);
+    if (expr.op.type == Token::Type::Or  && lhs.is_truthy())  return;
+    if (expr.op.type == Token::Type::And && !lhs.is_truthy()) return;
+    evaluate(expr.rhs);
 }
 
 auto loxe::Interpreter::visit(const ast::NilExpr& expr) -> void

@@ -37,6 +37,7 @@ namespace loxe
         auto visit(const ast::BinaryExpr&   expr) -> void override;
         auto visit(const ast::BooleanExpr&  expr) -> void override;
         auto visit(const ast::GroupingExpr& expr) -> void override;
+        auto visit(const ast::LogicalExpr&  expr) -> void override;
         auto visit(const ast::NilExpr&      expr) -> void override;
         auto visit(const ast::NumberExpr&   expr) -> void override;
         auto visit(const ast::StringExpr&   expr) -> void override;
