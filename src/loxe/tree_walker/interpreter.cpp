@@ -167,7 +167,7 @@ auto loxe::Interpreter::visit(const ast::NumberExpr& expr) -> void
 
 auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> void
 {
-    m_result = expr.value.lexeme;
+    m_result = expr.value;
 }
 
 auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> void

@@ -80,7 +80,7 @@ auto loxe::Parser::parse_for_stmt() -> ast::stmt_ptr
                        match(Token::Type::Var)       ? parse_var_stmt() :
                                                        parse_expr_stmt();
 
-    auto condition = !check(Token::Type::Semicolon) ? parse_expression() : ast::BooleanExpr::make(Token(Token::Type::True));
+    auto condition = !check(Token::Type::Semicolon) ? parse_expression() : ast::BooleanExpr::make(true);
     consume(Token::Type::Semicolon, "expect ';' after 'for' condition");
     auto update  = !check(Token::Type::RightParen) ? parse_expression() : nullptr;
     consume(Token::Type::RightParen, "expect ')' after 'for' update clauses");

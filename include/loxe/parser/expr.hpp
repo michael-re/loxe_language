@@ -72,6 +72,9 @@ namespace loxe::ast
         BooleanExpr(Token token)
             : value(token.type == Token::Type::True), token(std::move(token)) {}
 
+        BooleanExpr(bool value)
+            : value(value), token() {}
+
         bool  value;
         Token token;
     };
@@ -96,6 +99,9 @@ namespace loxe::ast
 
     struct NilExpr final : public ExprCRTP<NilExpr>
     {
+        NilExpr()
+            : token() {}
+
         NilExpr(Token token)
             : token(std::move(token)) {}
 
@@ -107,16 +113,23 @@ namespace loxe::ast
         NumberExpr(Token token)
             : value(std::stod(token.lexeme)), token(std::move(token)) {}
 
+        NumberExpr(double value)
+            : value(value), token() {}
+
         double value;
         Token  token;
     };
 
     struct StringExpr final : public ExprCRTP<StringExpr>
     {
-        StringExpr(Token value)
-            : value(std::move(value)) {}
+        StringExpr(Token token)
+            : value(token.lexeme), token(std::move(token)) {}
 
-        Token value;
+        StringExpr(std::string value)
+            : value(std::move(value)), token() {}
+
+        std::string value;
+        Token       token;
     };
 
     struct UnaryExpr final : public ExprCRTP<UnaryExpr>
