@@ -51,6 +51,7 @@ auto loxe::Parser::parse_statement() -> ast::stmt_ptr
     if (match(Token::Type::If))        return parse_if_stmt();
     if (match(Token::Type::LeftBrace)) return parse_block_stmt();
     if (match(Token::Type::Print))     return parse_print_stmt();
+    if (match(Token::Type::While))     return parse_while_stmt();
     return parse_expr_stmt();
 }
 
@@ -94,6 +95,15 @@ auto loxe::Parser::parse_var_stmt() -> ast::stmt_ptr
     auto initializer = match(Token::Type::Equal) ? parse_expression() : nullptr;
     consume(Token::Type::Semicolon, "expect ';' after variable declaration");
     return ast::VariableStmt::make(std::move(name), std::move(initializer));
+}
+
+auto loxe::Parser::parse_while_stmt() -> ast::stmt_ptr
+{
+    consume(Token::Type::LeftParen, "expect '(' after 'while'");
+    auto condition = parse_expression();
+    consume(Token::Type::RightParen, "expect ')' after 'while' condition");
+    auto body = parse_statement();
+    return ast::WhileStmt::make(std::move(condition), std::move(body));
 }
 
 auto loxe::Parser::parse_expression() -> ast::expr_ptr

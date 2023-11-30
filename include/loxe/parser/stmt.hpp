@@ -24,6 +24,7 @@ namespace loxe::ast
             virtual auto visit(const struct IfStmt&)         -> void = 0;
             virtual auto visit(const struct PrintStmt&)      -> void = 0;
             virtual auto visit(const struct VariableStmt&)   -> void = 0;
+            virtual auto visit(const struct WhileStmt&)      -> void = 0;
         };
 
         virtual ~Stmt() = default;
@@ -85,7 +86,16 @@ namespace loxe::ast
             : name(std::move(name)), initializer(std::move(initializer)) {}
 
         Token    name;
-        expr_ptr initializer; 
+        expr_ptr initializer;
+    };
+
+    struct WhileStmt final : public StmtCRTP<WhileStmt>
+    {
+        WhileStmt(expr_ptr condition, stmt_ptr body)
+            : condition(std::move(condition)), body(std::move(body)) {}
+
+        expr_ptr condition;
+        stmt_ptr body;
     };
 } // namespace loxe::ast
 
