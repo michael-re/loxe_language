@@ -48,6 +48,7 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_statement() -> ast::stmt_ptr
 {
+    if (match(Token::Type::For))       return parse_for_stmt();
     if (match(Token::Type::If))        return parse_if_stmt();
     if (match(Token::Type::LeftBrace)) return parse_block_stmt();
     if (match(Token::Type::Print))     return parse_print_stmt();
@@ -70,6 +71,26 @@ auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr
     auto expr = parse_expression();
     consume(Token::Type::Semicolon, "expect ';' after expression statement");
     return ast::ExpressionStmt::make(std::move(expr));
+}
+
+auto loxe::Parser::parse_for_stmt() -> ast::stmt_ptr
+{
+    consume(Token::Type::LeftParen, "expect '(' after 'for'");
+    auto initializer = match(Token::Type::Semicolon) ? nullptr          :
+                       match(Token::Type::Var)       ? parse_var_stmt() :
+                                                       parse_expr_stmt();
+
+    auto condition = !check(Token::Type::Semicolon) ? parse_expression() : ast::BooleanExpr::make(Token(Token::Type::True));
+    consume(Token::Type::Semicolon, "expect ';' after 'for' condition");
+    auto update  = !check(Token::Type::RightParen) ? parse_expression() : nullptr;
+    consume(Token::Type::RightParen, "expect ')' after 'for' update clauses");
+
+    auto body    = parse_statement();
+    auto loop    = ast::ForStmt::make(std::move(initializer), std::move(condition), std::move(update), std::move(body));
+    auto block = ast::stmt_list();
+    block.emplace_back(std::move(loop));
+
+    return ast::BlockStmt::make(std::move(block));
 }
 
 auto loxe::Parser::parse_if_stmt() -> ast::stmt_ptr

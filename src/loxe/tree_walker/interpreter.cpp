@@ -59,6 +59,12 @@ auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
     evaluate(stmt.expression);
 }
 
+auto loxe::Interpreter::visit(const ast::ForStmt& stmt) -> void
+{
+    for (execute(stmt.initializer); evaluate(stmt.condition).is_truthy(); evaluate(stmt.update))
+        execute(stmt.body);
+}
+
 auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
 {
     if (evaluate(stmt.condition).is_truthy())
