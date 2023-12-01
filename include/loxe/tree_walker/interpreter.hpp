@@ -35,6 +35,7 @@ namespace loxe
         auto visit(const ast::FunctionStmt&   stmt) -> void override;
         auto visit(const ast::IfStmt&         stmt) -> void override;
         auto visit(const ast::PrintStmt&      stmt) -> void override;
+        auto visit(const ast::ReturnStmt&     stmt) -> void override;
         auto visit(const ast::VariableStmt&   stmt) -> void override;
         auto visit(const ast::WhileStmt&      stmt) -> void override;
 

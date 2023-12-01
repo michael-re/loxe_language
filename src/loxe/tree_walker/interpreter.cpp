@@ -46,6 +46,11 @@ auto loxe::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> voi
 
         m_environment = std::move(previous);
     }
+    catch (ReturnError& e)
+    {
+        m_environment = std::move(previous);
+        throw e;
+    }
     catch (const RuntimeError& e)
     {
         m_environment = std::move(previous);
@@ -91,6 +96,11 @@ auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
 auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
 {
     utility::println("{}", evaluate(stmt.expression).stringify());
+}
+
+auto loxe::Interpreter::visit(const ast::ReturnStmt& stmt) -> void
+{
+    throw ReturnError(stmt.value ? std::move(evaluate(stmt.value)) : Object());
 }
 
 auto loxe::Interpreter::visit(const ast::VariableStmt& stmt) -> void

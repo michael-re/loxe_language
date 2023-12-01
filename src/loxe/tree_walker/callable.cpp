@@ -14,8 +14,16 @@ auto loxe::FunctionObj::call(Interpreter& interpreter, const args& args) const -
     for (auto i = args::size_type{0}; i < m_declaration->params.size(); i++)
         environment->define(m_declaration->params[i].lexeme, args[i]);
 
-    auto body = dynamic_cast<ast::BlockStmt*>(m_declaration->body.get());
-    interpreter.execute(body->statements, environment);
+    try
+    {
+        auto body = dynamic_cast<ast::BlockStmt*>(m_declaration->body.get());
+        interpreter.execute(body->statements, environment);
+    }
+    catch (ReturnError& e)
+    {
+        return std::move(e.value);
+    }
+
     return {};
 }
 

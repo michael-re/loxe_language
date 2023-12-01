@@ -7,6 +7,8 @@
 #include "loxe/common/except.hpp"
 #include "loxe/parser/token.hpp"
 
+#include "object.hpp"
+
 namespace loxe
 {
     struct RuntimeError : public Exception
@@ -16,6 +18,14 @@ namespace loxe
             static constexpr auto format = "[{}, {}] RuntimeError at token '{}': {}.";
             m_message = utility::as_string(format, token.line, token.column, token.lexeme, std::move(message));
         }
+    };
+
+    struct ReturnError : public Exception
+    {
+        ReturnError(Object value)
+            : Exception("using exception to return value"), value(std::move(value)) {}
+
+        Object value;
     };
 } // namespace loxe
 

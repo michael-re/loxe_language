@@ -26,6 +26,7 @@ namespace loxe::ast
             virtual auto visit(const struct FunctionStmt&)   -> void = 0;
             virtual auto visit(const struct IfStmt&)         -> void = 0;
             virtual auto visit(const struct PrintStmt&)      -> void = 0;
+            virtual auto visit(const struct ReturnStmt&)     -> void = 0;
             virtual auto visit(const struct VariableStmt&)   -> void = 0;
             virtual auto visit(const struct WhileStmt&)      -> void = 0;
         };
@@ -155,6 +156,21 @@ namespace loxe::ast
         }
 
         expr_ptr expression;
+    };
+
+    struct ReturnStmt final : public StmtCRTP<ReturnStmt>
+    {
+        ReturnStmt(Token keyword, expr_ptr value)
+            : keyword(std::move(keyword)), value(std::move(value)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ReturnStmt> override
+        {
+            auto val = value ? value->clone() : nullptr;
+            return std::make_unique<ReturnStmt>(keyword, std::move(val));
+        }
+
+        Token    keyword;
+        expr_ptr value;
     };
 
     struct VariableStmt final : public StmtCRTP<VariableStmt>
