@@ -34,6 +34,8 @@ namespace loxe::ast
 
         virtual ~Expr() = default;
         virtual auto accept(Visitor&) const -> void = 0;
+
+        [[nodiscard]] virtual auto clone() const -> expr_ptr = 0;
     };
 
     template<typename Derived>
@@ -42,19 +44,33 @@ namespace loxe::ast
         auto accept(Visitor& visitor) const -> void override
         {
             return visitor.visit(*static_cast<const Derived*>(this));
-        };
+        }
+
+        [[nodiscard]] auto clone() const -> expr_ptr override
+        {
+            return this->make_clone();
+        }
 
         template<typename... Args>
         [[nodiscard]] static auto make(Args&&... args) -> expr_ptr
         {
             return std::make_unique<Derived>(std::forward<Args>(args)...);
         }
+
+    protected:
+        [[nodiscard]] virtual auto make_clone() const -> std::unique_ptr<Derived> = 0;
     };
 
     struct AssignExpr final : public ExprCRTP<AssignExpr>
     {
         AssignExpr(Token name, expr_ptr value)
             : name(std::move(name)), value(std::move(value)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<AssignExpr> override
+        {
+            auto val = value ? value->clone() : nullptr;
+            return std::make_unique<AssignExpr>(name, std::move(val));
+        }
 
         Token    name;
         expr_ptr value;
@@ -64,6 +80,13 @@ namespace loxe::ast
     {
         BinaryExpr(Token op, expr_ptr lhs, expr_ptr rhs)
             : op(std::move(op)), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<BinaryExpr> override
+        {
+            auto left  = lhs ? lhs->clone() : nullptr;
+            auto right = rhs ? rhs->clone() : nullptr;
+            return std::make_unique<BinaryExpr>(op, std::move(left), std::move(right));
+        }
 
         Token    op;
         expr_ptr lhs;
@@ -78,6 +101,11 @@ namespace loxe::ast
         BooleanExpr(bool value)
             : value(value), token() {}
 
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<BooleanExpr> override
+        {
+            return std::make_unique<BooleanExpr>(*this);
+        }
+
         bool  value;
         Token token;
     };
@@ -86,6 +114,14 @@ namespace loxe::ast
     {
         CallExpr(Token paren, expr_ptr callee, expr_list args)
             : paren(std::move(paren)), callee(std::move(callee)), args(std::move(args)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<CallExpr> override
+        {
+            auto cal = callee ? callee->clone() : nullptr;
+            auto ags = expr_list();
+            for (const auto& arg : args) ags.emplace_back(arg ? arg->clone() : nullptr);
+            return std::make_unique<CallExpr>(paren, std::move(cal), std::move(ags));
+        }
 
         Token     paren;
         expr_ptr  callee;
@@ -97,6 +133,12 @@ namespace loxe::ast
         GroupingExpr(expr_ptr expression)
             : expression(std::move(expression)) {}
 
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<GroupingExpr> override
+        {
+            auto expr = expression ? expression->clone() : nullptr;
+            return std::make_unique<GroupingExpr>(std::move(expr));
+        }
+
         expr_ptr expression;
     };
 
@@ -104,6 +146,13 @@ namespace loxe::ast
     {
         LogicalExpr(Token op, expr_ptr lhs, expr_ptr rhs)
             : op(std::move(op)), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<LogicalExpr> override
+        {
+            auto left  = lhs ? lhs->clone() : nullptr;
+            auto right = rhs ? rhs->clone() : nullptr;
+            return std::make_unique<LogicalExpr>(op, std::move(left), std::move(right));
+        }
 
         Token    op;
         expr_ptr lhs;
@@ -118,6 +167,11 @@ namespace loxe::ast
         NilExpr(Token token)
             : token(std::move(token)) {}
 
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<NilExpr> override
+        {
+            return std::make_unique<NilExpr>(*this);
+        }
+
         Token token;
     };
 
@@ -128,6 +182,11 @@ namespace loxe::ast
 
         NumberExpr(double value)
             : value(value), token() {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<NumberExpr> override
+        {
+            return std::make_unique<NumberExpr>(*this);
+        }
 
         double value;
         Token  token;
@@ -141,6 +200,11 @@ namespace loxe::ast
         StringExpr(std::string value)
             : value(std::move(value)), token() {}
 
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<StringExpr> override
+        {
+            return std::make_unique<StringExpr>(*this);
+        }
+
         std::string value;
         Token       token;
     };
@@ -150,6 +214,12 @@ namespace loxe::ast
         UnaryExpr(Token op, expr_ptr operand)
             : op(std::move(op)), operand(std::move(operand)) {}
 
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<UnaryExpr> override
+        {
+            auto oper = operand ? operand->clone() : nullptr;
+            return std::make_unique<UnaryExpr>(op, std::move(oper));
+        }
+
         Token    op;
         expr_ptr operand;
     };
@@ -158,6 +228,11 @@ namespace loxe::ast
     {
         VariableExpr(Token name)
             : name(std::move(name)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<VariableExpr> override
+        {
+            return std::make_unique<VariableExpr>(*this);
+        }
 
         Token name;
     };
