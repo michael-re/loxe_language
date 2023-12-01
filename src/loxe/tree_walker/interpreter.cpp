@@ -1,9 +1,13 @@
 #include "loxe/common/utility.hpp"
 #include "loxe/tree_walker/error.hpp"
+#include "loxe/tree_walker/callable.hpp"
 #include "loxe/tree_walker/interpreter.hpp"
 
 loxe::Interpreter::Interpreter()
-    : m_result(), m_environment(std::make_shared<Environment>()) {}
+    : m_result(), m_global(std::make_shared<Environment>()), m_environment(m_global)
+{
+    m_global->define("clock", { std::make_shared<NativeClock>() });
+}
 
 auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
 {
@@ -139,6 +143,23 @@ auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void
 auto loxe::Interpreter::visit(const ast::BooleanExpr& expr) -> void
 {
     m_result = expr.value;
+}
+
+auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> void
+{
+    auto callee = evaluate(expr.callee);
+    auto args   = Callable::args();
+    for (const auto& arg : expr.args)
+        args.emplace_back(std::move(evaluate(arg)));
+
+    if (!callee.is<Object::callable>())
+        throw RuntimeError(expr.paren, "can only call functions and classes");
+
+    auto callable = callee.as<Object::callable>();
+    if (callable->arity() != args.size())
+        throw RuntimeError(expr.paren, utility::as_string("expected {} args but got {}", callable-> arity(), args.size()));
+
+    m_result = std::move(callable->call(*this, args));
 }
 
 auto loxe::Interpreter::visit(const ast::GroupingExpr& expr) -> void

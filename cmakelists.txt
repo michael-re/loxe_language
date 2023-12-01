@@ -84,6 +84,7 @@ set(loxe_include_files
         include/loxe/parser/token.hpp
 
         # tree walker
+        include/loxe/tree_walker/callable.hpp
         include/loxe/tree_walker/environment.hpp
         include/loxe/tree_walker/error.hpp
         include/loxe/tree_walker/interpreter.hpp
@@ -102,6 +103,7 @@ set(loxe_source_files
         src/loxe/parser/token.cpp
 
         # tree walker
+        src/loxe/tree_walker/callable.cpp
         src/loxe/tree_walker/environment.cpp
         src/loxe/tree_walker/interpreter.cpp
         src/loxe/tree_walker/object.cpp

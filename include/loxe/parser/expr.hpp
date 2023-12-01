@@ -5,12 +5,14 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "token.hpp"
 
 namespace loxe::ast
 {
-    using expr_ptr = std::unique_ptr<struct Expr>;
+    using expr_ptr  = std::unique_ptr<struct Expr>;
+    using expr_list = std::vector<expr_ptr>;
 
     struct Expr
     {
@@ -20,6 +22,7 @@ namespace loxe::ast
             virtual auto visit(const struct AssignExpr&)   -> void = 0;
             virtual auto visit(const struct BinaryExpr&)   -> void = 0;
             virtual auto visit(const struct BooleanExpr&)  -> void = 0;
+            virtual auto visit(const struct CallExpr&)     -> void = 0;
             virtual auto visit(const struct GroupingExpr&) -> void = 0;
             virtual auto visit(const struct LogicalExpr&)  -> void = 0;
             virtual auto visit(const struct NilExpr&)      -> void = 0;
@@ -77,6 +80,16 @@ namespace loxe::ast
 
         bool  value;
         Token token;
+    };
+
+    struct CallExpr final : public ExprCRTP<CallExpr>
+    {
+        CallExpr(Token paren, expr_ptr callee, expr_list args)
+            : paren(std::move(paren)), callee(std::move(callee)), args(std::move(args)) {}
+
+        Token     paren;
+        expr_ptr  callee;
+        expr_list args;
     };
 
     struct GroupingExpr final : public ExprCRTP<GroupingExpr>

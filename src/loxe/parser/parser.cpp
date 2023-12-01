@@ -236,7 +236,21 @@ auto loxe::Parser::parse_unary() -> ast::expr_ptr
         return ast::UnaryExpr::make(std::move(op), std::move(operand));
     }
 
-    return parse_primary();
+    return parse_call();
+}
+
+auto loxe::Parser::parse_call() -> ast::expr_ptr
+{
+    auto expr = parse_primary();
+    while (true)
+    {
+        if (match(Token::Type::LeftParen))
+            expr = finish_call(std::move(expr));
+        else
+             break;
+    }
+
+    return expr;
 }
 
 auto loxe::Parser::parse_primary() -> ast::expr_ptr
@@ -257,6 +271,21 @@ auto loxe::Parser::parse_primary() -> ast::expr_ptr
 
     throw error(current(), "expect expression");
     return {}; // unreachable
+}
+
+auto loxe::Parser::finish_call(ast::expr_ptr callee) -> ast::expr_ptr
+{
+    auto args = ast::expr_list();
+    if (!check(Token::Type::RightParen))
+    {
+        do
+        {
+            args.emplace_back(parse_expression());
+        } while (match(Token::Type::Comma));
+    }
+
+    auto paren = consume(Token::Type::RightParen, "expect ')' after arguments");
+    return ast::CallExpr::make(std::move(paren), std::move(callee), std::move(args));
 }
 
 auto loxe::Parser::check(Token::Type type) const -> bool

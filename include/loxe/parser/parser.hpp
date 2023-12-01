@@ -45,7 +45,10 @@ namespace loxe
         [[nodiscard]] auto parse_term()        -> ast::expr_ptr;
         [[nodiscard]] auto parse_factor()      -> ast::expr_ptr;
         [[nodiscard]] auto parse_unary()       -> ast::expr_ptr;
+        [[nodiscard]] auto parse_call()        -> ast::expr_ptr;
         [[nodiscard]] auto parse_primary()     -> ast::expr_ptr;
+
+        [[nodiscard]] auto finish_call(ast::expr_ptr callee) -> ast::expr_ptr;
 
         [[nodiscard]] auto check(Token::Type type) const -> bool;
         [[nodiscard]] auto match(Token::Type type)       -> bool;

@@ -38,6 +38,7 @@ namespace loxe
         auto visit(const ast::AssignExpr&   expr) -> void override;
         auto visit(const ast::BinaryExpr&   expr) -> void override;
         auto visit(const ast::BooleanExpr&  expr) -> void override;
+        auto visit(const ast::CallExpr&     expr) -> void override;
         auto visit(const ast::GroupingExpr& expr) -> void override;
         auto visit(const ast::LogicalExpr&  expr) -> void override;
         auto visit(const ast::NilExpr&      expr) -> void override;
@@ -48,6 +49,7 @@ namespace loxe
 
     private:
         Object  m_result;
+        env_ptr m_global;
         env_ptr m_environment;
     };
 } // namespace loxe

@@ -19,6 +19,7 @@ namespace loxe
         Environment(Environment* enclosing = nullptr)
             : m_enclosing(enclosing), m_values({}) {}
 
+        auto define(const std::string& name, Object value) -> void;
         auto define(const class Token& name, Object value) -> void;
         auto assign(const class Token& name, Object value) -> Object&;
         auto get   (const class Token& name)               -> Object&;

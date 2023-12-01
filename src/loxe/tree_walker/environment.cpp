@@ -2,6 +2,13 @@
 #include "loxe/tree_walker/error.hpp"
 #include "loxe/parser/token.hpp"
 
+auto loxe::Environment::define(const std::string& name, Object value) -> void
+{
+    if (m_values.contains(name))
+        throw RuntimeError(Token(), "symbol already define with name '" + name + "' in the current scope");
+    m_values[name] = std::move(value);
+}
+
 auto loxe::Environment::define(const Token& name, Object value) -> void
 {
     const auto& id = name.lexeme;
