@@ -26,8 +26,6 @@ namespace loxe
         auto execute  (const ast::stmt_ptr&  stmt)               -> void;
         auto execute  (const ast::stmt_list& stmts, env_ptr env) -> void;
 
-        auto globals() -> env_ptr;
-
     private:
         auto visit(const ast::BlockStmt&      stmt) -> void override;
         auto visit(const ast::ExpressionStmt& stmt) -> void override;

@@ -5,14 +5,18 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <cstdint>
 
 #include "loxe/parser/stmt.hpp"
+
+#include "environment.hpp"
 #include "object.hpp"
 
 namespace loxe
 {
     class Interpreter;
+    class Environment;
 
     class Callable
     {
@@ -29,14 +33,15 @@ namespace loxe
     class FunctionObj : public Callable
     {
     public:
-        FunctionObj(std::shared_ptr<ast::FunctionStmt> declaration)
-            : m_declaration(std::move(declaration)) {}
+        FunctionObj(std::shared_ptr<ast::FunctionStmt> declaration, Environment closure)
+            : m_closure(std::move(closure)), m_declaration(std::move(declaration)) {}
 
         auto call(Interpreter&, const args&) const -> Object      override;
         auto arity()                         const -> std::size_t override;
         auto to_string()                     const -> std::string override;
 
     private:
+        mutable Environment                m_closure;
         std::shared_ptr<ast::FunctionStmt> m_declaration;
     };
 

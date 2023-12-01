@@ -10,7 +10,7 @@ auto loxe::FunctionObj::call(Interpreter& interpreter, const args& args) const -
     if (!m_declaration)
         throw Exception("can't call undefined function");
 
-    auto environment = std::make_shared<Environment>(interpreter.globals().get());
+    auto environment = std::make_shared<Environment>(&m_closure);
     for (auto i = args::size_type{0}; i < m_declaration->params.size(); i++)
         environment->define(m_declaration->params[i].lexeme, args[i]);
 
