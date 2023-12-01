@@ -53,6 +53,11 @@ auto loxe::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> voi
     }
 }
 
+auto loxe::Interpreter::globals() -> env_ptr
+{
+    return m_global;
+}
+
 auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
 {
     execute(stmt.statements, std::make_shared<Environment>(m_environment.get()));
@@ -67,6 +72,12 @@ auto loxe::Interpreter::visit(const ast::ForStmt& stmt) -> void
 {
     for (execute(stmt.initializer); evaluate(stmt.condition).is_truthy(); evaluate(stmt.update))
         execute(stmt.body);
+}
+
+auto loxe::Interpreter::visit(const ast::FunctionStmt& stmt) -> void
+{
+    auto function = std::make_shared<FunctionObj>(stmt.make_clone());
+    m_environment->define(stmt.name, { function });
 }
 
 auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void

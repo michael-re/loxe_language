@@ -35,6 +35,7 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 {
     try
     {
+        if (match(Token::Type::Fun)) return parse_fun_stmt();
         if (match(Token::Type::Var)) return parse_var_stmt();
         return parse_statement();
     }
@@ -91,6 +92,11 @@ auto loxe::Parser::parse_for_stmt() -> ast::stmt_ptr
     block.emplace_back(std::move(loop));
 
     return ast::BlockStmt::make(std::move(block));
+}
+
+auto loxe::Parser::parse_fun_stmt() -> ast::stmt_ptr
+{
+    return function("function");
 }
 
 auto loxe::Parser::parse_if_stmt() -> ast::stmt_ptr
@@ -286,6 +292,25 @@ auto loxe::Parser::finish_call(ast::expr_ptr callee) -> ast::expr_ptr
 
     auto paren = consume(Token::Type::RightParen, "expect ')' after arguments");
     return ast::CallExpr::make(std::move(paren), std::move(callee), std::move(args));
+}
+
+auto loxe::Parser::function(const std::string& kind) -> ast::stmt_ptr
+{
+    auto name = consume(Token::Type::Identifier, "expect " + kind + " name");
+    consume(Token::Type::LeftParen, "expect '(' after " + kind + " name");
+    auto params = ast::param_list();
+
+    if (!check(Token::Type::RightParen))
+    {
+        do
+        {
+            params.emplace_back(consume(Token::Type::Identifier, "expect paramater name"));
+        } while (match(Token::Type::Comma));
+    }
+
+    consume(Token::Type::RightParen, "expect ')' after parameters");
+    consume(Token::Type::LeftBrace, "expect '{' before " + kind + " body");
+    return ast::FunctionStmt::make(std::move(name), std::move(params), parse_block_stmt());
 }
 
 auto loxe::Parser::check(Token::Type type) const -> bool

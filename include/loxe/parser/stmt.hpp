@@ -11,8 +11,9 @@
 
 namespace loxe::ast
 {
-    using stmt_ptr  = std::unique_ptr<struct Stmt>;
-    using stmt_list = std::vector<stmt_ptr>;
+    using stmt_ptr   = std::unique_ptr<struct Stmt>;
+    using stmt_list  = std::vector<stmt_ptr>;
+    using param_list = std::vector<Token>;
 
     struct Stmt
     {
@@ -22,6 +23,7 @@ namespace loxe::ast
             virtual auto visit(const struct BlockStmt&)      -> void = 0;
             virtual auto visit(const struct ExpressionStmt&) -> void = 0;
             virtual auto visit(const struct ForStmt&)        -> void = 0;
+            virtual auto visit(const struct FunctionStmt&)   -> void = 0;
             virtual auto visit(const struct IfStmt&)         -> void = 0;
             virtual auto visit(const struct PrintStmt&)      -> void = 0;
             virtual auto visit(const struct VariableStmt&)   -> void = 0;
@@ -105,6 +107,22 @@ namespace loxe::ast
         expr_ptr condition;
         expr_ptr update;
         stmt_ptr body;
+    };
+
+    struct FunctionStmt final : public StmtCRTP<FunctionStmt>
+    {
+        FunctionStmt(Token name, param_list params, stmt_ptr body)
+            : name(std::move(name)), params(std::move(params)), body(std::move(body)) {}
+
+        auto make_clone() const -> std::unique_ptr<FunctionStmt> override
+        {
+            auto bdy = body ? body->clone() : nullptr;
+            return std::make_unique<FunctionStmt>(name, params, std::move(bdy));
+        }
+
+        Token      name;
+        param_list params;
+        stmt_ptr   body;
     };
 
     struct IfStmt final : public StmtCRTP<IfStmt>
