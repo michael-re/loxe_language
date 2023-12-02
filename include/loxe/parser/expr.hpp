@@ -6,6 +6,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cstdint>
+#include <optional>
 
 #include "token.hpp"
 
@@ -53,6 +55,8 @@ namespace loxe::ast
         virtual auto accept(ConstVisitor&) const -> void = 0;
 
         [[nodiscard]] virtual auto clone() const -> expr_ptr = 0;
+
+        std::optional<std::size_t> depth;
     };
 
     template<typename Derived>

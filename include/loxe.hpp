@@ -11,6 +11,7 @@
 #include "loxe/parser/expr.hpp"
 #include "loxe/parser/lexer.hpp"
 #include "loxe/parser/parser.hpp"
+#include "loxe/parser/resolver.hpp"
 #include "loxe/parser/stmt.hpp"
 #include "loxe/parser/token.hpp"
 

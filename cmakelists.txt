@@ -80,6 +80,7 @@ set(loxe_include_files
         include/loxe/parser/expr.hpp
         include/loxe/parser/lexer.hpp
         include/loxe/parser/parser.hpp
+        include/loxe/parser/resolver.hpp
         include/loxe/parser/stmt.hpp
         include/loxe/parser/token.hpp
 
@@ -100,6 +101,7 @@ set(loxe_source_files
         # parser
         src/loxe/parser/lexer.cpp
         src/loxe/parser/parser.cpp
+        src/loxe/parser/resolver.cpp
         src/loxe/parser/token.cpp
 
         # tree walker
