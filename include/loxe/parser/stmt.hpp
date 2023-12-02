@@ -20,6 +20,20 @@ namespace loxe::ast
         struct Visitor
         {
             virtual ~Visitor() = default;
+            virtual auto visit(struct BlockStmt&)      -> void = 0;
+            virtual auto visit(struct ExpressionStmt&) -> void = 0;
+            virtual auto visit(struct ForStmt&)        -> void = 0;
+            virtual auto visit(struct FunctionStmt&)   -> void = 0;
+            virtual auto visit(struct IfStmt&)         -> void = 0;
+            virtual auto visit(struct PrintStmt&)      -> void = 0;
+            virtual auto visit(struct ReturnStmt&)     -> void = 0;
+            virtual auto visit(struct VariableStmt&)   -> void = 0;
+            virtual auto visit(struct WhileStmt&)      -> void = 0;
+        };
+
+        struct ConstVisitor
+        {
+            virtual ~ConstVisitor() = default;
             virtual auto visit(const struct BlockStmt&)      -> void = 0;
             virtual auto visit(const struct ExpressionStmt&) -> void = 0;
             virtual auto visit(const struct ForStmt&)        -> void = 0;
@@ -32,7 +46,8 @@ namespace loxe::ast
         };
 
         virtual ~Stmt() = default;
-        virtual auto accept(Visitor&) const -> void = 0;
+        virtual auto accept(Visitor&)            -> void = 0;
+        virtual auto accept(ConstVisitor&) const -> void = 0;
 
         [[nodiscard]] virtual auto clone() const -> stmt_ptr = 0;
     };
@@ -40,7 +55,12 @@ namespace loxe::ast
     template<typename Derived>
     struct StmtCRTP : public Stmt
     {
-        auto accept(Visitor& visitor) const -> void override
+        auto accept(Visitor& visitor) -> void override
+        {
+            return visitor.visit(*static_cast<Derived*>(this));
+        }
+
+        auto accept(ConstVisitor& visitor) const -> void override
         {
             return visitor.visit(*static_cast<const Derived*>(this));
         }

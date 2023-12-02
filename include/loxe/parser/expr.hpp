@@ -19,6 +19,22 @@ namespace loxe::ast
         struct Visitor
         {
             virtual ~Visitor() = default;
+            virtual auto visit(struct AssignExpr&)   -> void = 0;
+            virtual auto visit(struct BinaryExpr&)   -> void = 0;
+            virtual auto visit(struct BooleanExpr&)  -> void = 0;
+            virtual auto visit(struct CallExpr&)     -> void = 0;
+            virtual auto visit(struct GroupingExpr&) -> void = 0;
+            virtual auto visit(struct LogicalExpr&)  -> void = 0;
+            virtual auto visit(struct NilExpr&)      -> void = 0;
+            virtual auto visit(struct NumberExpr&)   -> void = 0;
+            virtual auto visit(struct StringExpr&)   -> void = 0;
+            virtual auto visit(struct UnaryExpr&)    -> void = 0;
+            virtual auto visit(struct VariableExpr&) -> void = 0;
+        };
+
+        struct ConstVisitor
+        {
+            virtual ~ConstVisitor() = default;
             virtual auto visit(const struct AssignExpr&)   -> void = 0;
             virtual auto visit(const struct BinaryExpr&)   -> void = 0;
             virtual auto visit(const struct BooleanExpr&)  -> void = 0;
@@ -33,7 +49,8 @@ namespace loxe::ast
         };
 
         virtual ~Expr() = default;
-        virtual auto accept(Visitor&) const -> void = 0;
+        virtual auto accept(Visitor&)            -> void = 0;
+        virtual auto accept(ConstVisitor&) const -> void = 0;
 
         [[nodiscard]] virtual auto clone() const -> expr_ptr = 0;
     };
@@ -41,7 +58,12 @@ namespace loxe::ast
     template<typename Derived>
     struct ExprCRTP : public Expr
     {
-        auto accept(Visitor& visitor) const -> void override
+        auto accept(Visitor& visitor) -> void override
+        {
+            return visitor.visit(*static_cast<Derived*>(this));
+        }
+
+        auto accept(ConstVisitor& visitor) const -> void override
         {
             return visitor.visit(*static_cast<const Derived*>(this));
         }

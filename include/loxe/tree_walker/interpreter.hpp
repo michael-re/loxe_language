@@ -13,7 +13,7 @@
 
 namespace loxe
 {
-    class Interpreter : public ast::Expr::Visitor, public ast::Stmt::Visitor
+    class Interpreter : public ast::Expr::ConstVisitor, public ast::Stmt::ConstVisitor
     {
     public:
         using env_ptr = std::shared_ptr<Environment>;
