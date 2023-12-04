@@ -6,6 +6,7 @@
 #include <string>
 
 #include "loxe/parser/parser.hpp"
+#include "loxe/parser/resolver.hpp"
 
 #include "interpreter.hpp"
 
@@ -20,6 +21,7 @@ namespace loxe
 
     private:
         Parser      m_parser;
+        Resolver    m_resolver;
         Interpreter m_interpreter;
     };
 } // namespace loxe

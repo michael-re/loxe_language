@@ -5,9 +5,13 @@
 
 auto loxe::TreeWalker::run(std::string source) -> void
 {
-    auto program = m_parser.parse(std::move(source));
-    if (!program.empty()) m_interpreter.interpret(program);
-    else                  utility::println("error parsing program");
+    if (auto ast = m_parser.parse(std::move(source)))
+    {
+        if (!m_resolver.resolve_ast(*ast).had_error())
+        {
+            m_interpreter.interpret(*ast);
+        }
+    }
 }
 
 auto loxe::TreeWalker::run_repl(std::string_view prompt) -> void

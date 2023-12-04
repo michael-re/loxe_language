@@ -3,6 +3,8 @@
 #ifndef LOXE_PARSER_PARSER_HPP
 #define LOXE_PARSER_PARSER_HPP
 
+#include <optional>
+
 #include "loxe/common/except.hpp"
 
 #include "expr.hpp"
@@ -23,7 +25,7 @@ namespace loxe
         };
 
     public:
-        [[nodiscard]] auto parse(std::string source) -> ast::stmt_list;
+        [[nodiscard]] auto parse(std::string source) -> std::optional<ast::stmt_list>;
 
     private:
         [[nodiscard]] auto parse_declaration() -> ast::stmt_ptr;

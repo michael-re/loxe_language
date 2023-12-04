@@ -13,7 +13,7 @@ loxe::Parser::ParseError::ParseError(Token token, std::string message)
         m_message = utility::as_string(format_2, this->token.line, this->token.column, std::move(message), this->token.lexeme);
 }
 
-auto loxe::Parser::parse(std::string source) -> ast::stmt_list
+auto loxe::Parser::parse(std::string source) -> std::optional<ast::stmt_list>
 {
     m_error = false;
     m_lexer = Lexer(std::move(source)).lex();
@@ -25,10 +25,7 @@ auto loxe::Parser::parse(std::string source) -> ast::stmt_list
         ast.emplace_back(parse_declaration());
     }
 
-    if (m_error)
-        ast.clear();
-
-    return ast;
+    return m_error ? std::nullopt : std::optional(std::move(ast));
 }
 
 auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
