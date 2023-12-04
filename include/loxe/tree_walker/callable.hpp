@@ -44,15 +44,6 @@ namespace loxe
         mutable Environment                m_closure;
         std::shared_ptr<ast::FunctionStmt> m_declaration;
     };
-
-    class NativeClock : public Callable
-    {
-    public:
-        auto call(Interpreter&, const args&) const -> Object      override;
-        auto arity()                         const -> std::size_t override;
-        auto to_string()                     const -> std::string override;
-    };
 } // namespace loxe
-
 
 #endif // !LOXE_TREE_WALKER_CALLABLE_HPP

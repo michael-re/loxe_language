@@ -1,5 +1,3 @@
-#include <chrono>
-
 #include "loxe/tree_walker/callable.hpp"
 #include "loxe/tree_walker/error.hpp"
 #include "loxe/tree_walker/environment.hpp"
@@ -37,21 +35,4 @@ auto loxe::FunctionObj::to_string() const -> std::string
 {
     if (!m_declaration) return "<error: function does not have a declaration>";
     return "<fn " + m_declaration->name.lexeme + ">";
-}
-
-auto loxe::NativeClock::call(Interpreter&, const args&) const -> Object
-{
-    const auto time = std::chrono::high_resolution_clock::now().time_since_epoch();
-    const auto ms   = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
-    return { static_cast<Object::number>(ms) };
-}
-
-auto loxe::NativeClock::arity() const -> std::size_t
-{
-    return 0;
-}
-
-auto loxe::NativeClock::to_string() const -> std::string
-{
-    return "<fn native clock>";
 }

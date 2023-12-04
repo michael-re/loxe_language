@@ -4,10 +4,7 @@
 #include "loxe/tree_walker/interpreter.hpp"
 
 loxe::Interpreter::Interpreter()
-    : m_result(), m_global(std::make_shared<Environment>()), m_environment(m_global)
-{
-    m_global->define("clock", { std::make_shared<NativeClock>() });
-}
+    : m_result(), m_global(std::make_shared<Environment>()), m_environment(m_global) {}
 
 auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
 {
