@@ -42,6 +42,7 @@ namespace loxe
         auto visit(ast::BinaryExpr&   expr) -> void override;
         auto visit(ast::BooleanExpr&  expr) -> void override;
         auto visit(ast::CallExpr&     expr) -> void override;
+        auto visit(ast::GetExpr&      expr) -> void override;
         auto visit(ast::GroupingExpr& expr) -> void override;
         auto visit(ast::LogicalExpr&  expr) -> void override;
         auto visit(ast::NilExpr&      expr) -> void override;

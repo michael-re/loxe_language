@@ -25,6 +25,7 @@ namespace loxe::ast
             virtual auto visit(struct BinaryExpr&)   -> void = 0;
             virtual auto visit(struct BooleanExpr&)  -> void = 0;
             virtual auto visit(struct CallExpr&)     -> void = 0;
+            virtual auto visit(struct GetExpr&)      -> void = 0;
             virtual auto visit(struct GroupingExpr&) -> void = 0;
             virtual auto visit(struct LogicalExpr&)  -> void = 0;
             virtual auto visit(struct NilExpr&)      -> void = 0;
@@ -41,6 +42,7 @@ namespace loxe::ast
             virtual auto visit(const struct BinaryExpr&)   -> void = 0;
             virtual auto visit(const struct BooleanExpr&)  -> void = 0;
             virtual auto visit(const struct CallExpr&)     -> void = 0;
+            virtual auto visit(const struct GetExpr&)      -> void = 0;
             virtual auto visit(const struct GroupingExpr&) -> void = 0;
             virtual auto visit(const struct LogicalExpr&)  -> void = 0;
             virtual auto visit(const struct NilExpr&)      -> void = 0;
@@ -152,6 +154,21 @@ namespace loxe::ast
         Token     paren;
         expr_ptr  callee;
         expr_list args;
+    };
+
+    struct GetExpr final : public ExprCRTP<GetExpr>
+    {
+        GetExpr(Token name, expr_ptr object)
+            : name(std::move(name)), object(std::move(object)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<GetExpr> override
+        {
+            auto obj = object ? object->clone() : nullptr;
+            return std::make_unique<GetExpr>(name, std::move(obj));
+        }
+
+        Token    name;
+        expr_ptr object;
     };
 
     struct GroupingExpr final : public ExprCRTP<GroupingExpr>

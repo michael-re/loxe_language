@@ -271,9 +271,18 @@ auto loxe::Parser::parse_call() -> ast::expr_ptr
     while (true)
     {
         if (match(Token::Type::LeftParen))
+        {
             expr = finish_call(std::move(expr));
+        }
+        else if (match(Token::Type::Dot))
+        {
+            auto name = consume(Token::Type::Identifier, "expect property name after '.'");
+            expr = ast::GetExpr::make(std::move(name), std::move(expr));
+        }
         else
+        {
              break;
+        }
     }
 
     return expr;

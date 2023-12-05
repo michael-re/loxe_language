@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
+#include <unordered_map>
 
 #include "loxe/parser/stmt.hpp"
 
@@ -64,15 +65,22 @@ namespace loxe
     class InstanceObj : public Callable
     {
     public:
-        InstanceObj(ClassObj class_obj)
-            : class_obj(std::move(class_obj)) {}
+        using class_type = ClassObj;
+        using field_type = std::unordered_map<std::string, Object>;
+
+    public:
+        InstanceObj(class_type class_obj)
+            : m_class(std::move(class_obj)), m_fields({}) {}
 
         auto call(Interpreter&, const args&) const -> Object      override;
         auto arity()                         const -> std::size_t override;
         auto to_string()                     const -> std::string override;
 
+        auto get(const Token& name) -> Object&;
+
     private:
-        ClassObj class_obj;
+        class_type m_class;
+        field_type m_fields;
     };
 } // namespace loxe
 

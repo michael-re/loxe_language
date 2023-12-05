@@ -69,5 +69,11 @@ auto loxe::InstanceObj::arity() const -> std::size_t
 
 auto loxe::InstanceObj::to_string() const -> std::string
 {
-    return "<" + class_obj.name.lexeme + " instance>";
+    return "<" + m_class.name.lexeme + " instance>";
+}
+
+auto loxe::InstanceObj::get(const Token& name) -> Object&
+{
+    if (m_fields.contains(name.lexeme)) return m_fields[name.lexeme];
+    throw RuntimeError(name, "undefined property '" + name.lexeme + "'");
 }

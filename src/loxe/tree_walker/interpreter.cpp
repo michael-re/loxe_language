@@ -180,6 +180,23 @@ auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> void
     m_result = std::move(callable->call(*this, args));
 }
 
+auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> void
+{
+    auto &value = evaluate(expr.object);
+    if (value.is<Object::callable>())
+    {
+        auto &callable = value.as<Object::callable>();
+        if (auto instance = std::dynamic_pointer_cast<InstanceObj>(callable))
+        {
+            m_result = instance->get(expr.name);
+            return;
+        }
+    }
+
+    m_result = Object();
+    throw RuntimeError(expr.name, "only instance have properties");
+}
+
 auto loxe::Interpreter::visit(const ast::GroupingExpr& expr) -> void
 {
     evaluate(expr.expression);

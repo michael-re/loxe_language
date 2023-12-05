@@ -124,6 +124,11 @@ auto loxe::Resolver::visit(ast::CallExpr& expr) -> void
         resolve(arg);
 }
 
+auto loxe::Resolver::visit(ast::GetExpr& expr) -> void
+{
+    resolve(expr.object);
+}
+
 auto loxe::Resolver::visit(ast::GroupingExpr& expr) -> void
 {
     resolve(expr.expression);
