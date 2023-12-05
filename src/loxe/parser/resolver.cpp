@@ -53,9 +53,11 @@ auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
     begin_scope();
     m_scopes.back()["this"] = true;
 
-    const auto fun_type = FunType::Method;
     for (const auto& method : stmt.methods)
+    {
+        const auto fun_type = method->name.lexeme == "init" ? FunType::Initializer : FunType::Method;
         resolve_function(*(method.get()), fun_type);
+    }
 
     end_scope();
     m_cls_type = enclosing;
@@ -95,7 +97,12 @@ auto loxe::Resolver::visit(ast::PrintStmt& stmt) -> void
 
 auto loxe::Resolver::visit(ast::ReturnStmt& stmt) -> void
 {
-    if (m_fun_type == FunType::None) error(stmt.keyword, "can't return from top-level code");
+    if (m_fun_type == FunType::None)
+        error(stmt.keyword, "can't return from top-level code");
+
+    if (stmt.value && m_fun_type == FunType::Initializer)
+        error(stmt.keyword, "can't return value from class init method");
+
     if (stmt.value) resolve(stmt.value);
 }
 

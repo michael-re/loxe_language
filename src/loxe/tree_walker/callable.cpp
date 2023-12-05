@@ -19,10 +19,11 @@ auto loxe::FunctionObj::call(Interpreter& interpreter, const args& args) const -
     }
     catch (ReturnError& e)
     {
+        if (m_init) return m_closure.get_at(0, "this");
         return std::move(e.value);
     }
 
-    return {};
+    return m_init ? m_closure.get_at(0, "this") : Object();
 }
 
 auto loxe::FunctionObj::arity() const -> std::size_t
@@ -41,19 +42,22 @@ auto loxe::FunctionObj::bind(std::shared_ptr<InstanceObj> instance) -> Object
 {
     auto environment = Environment(&m_closure);
     environment.define("this", { std::move(instance) });
-    return { std::make_shared<FunctionObj>(this->m_declaration->make_clone(), std::move(environment)) };
+    return { std::make_shared<FunctionObj>(this->m_declaration->make_clone(), std::move(environment), m_init) };
 }
 
-auto loxe::ClassObj::call(Interpreter&, const args&) const -> Object
+auto loxe::ClassObj::call(Interpreter& interpreter, const args& args) const -> Object
 {
-    // TODO: implement me
     auto instance = std::make_shared<InstanceObj>(*this);
+    if (auto init = m_methods.find("init"); init != m_methods.end())
+        init->second->bind(instance).as<Object::callable>()->call(interpreter, args);
+
     return { instance };
 }
 
 auto loxe::ClassObj::arity() const -> std::size_t
 {
-    // TODO: implement me
+    if (auto init = m_methods.find("init"); init != m_methods.end())
+        return init->second->arity();
     return 0;
 }
 

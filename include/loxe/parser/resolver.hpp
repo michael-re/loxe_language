@@ -56,15 +56,16 @@ namespace loxe
     private:
         enum class FunType
         {
-            None,
-            Method,
             Function,
+            Initializer,
+            Method,
+            None,
         };
 
         enum class ClsType
         {
-            None,
             Class,
+            None,
         };
 
     private:
