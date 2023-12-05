@@ -1,5 +1,6 @@
 #include "loxe/tree_walker/object.hpp"
 #include "loxe/tree_walker/callable.hpp"
+#include "loxe/tree_walker/instance.hpp"
 
 auto loxe::Object::is_truthy() const -> bool
 {
@@ -23,6 +24,7 @@ auto loxe::Object::stringify() const -> std::string
         }
         case 3: return as<string>();
         case 4: return as<callable>()->to_string();
+        case 5: return as<instance>()->to_string();
         default: break;
     }
 

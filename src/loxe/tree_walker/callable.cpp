@@ -1,5 +1,6 @@
-#include "loxe/tree_walker/callable.hpp"
 #include "loxe/tree_walker/error.hpp"
+#include "loxe/tree_walker/callable.hpp"
+#include "loxe/tree_walker/instance.hpp"
 #include "loxe/tree_walker/environment.hpp"
 #include "loxe/tree_walker/interpreter.hpp"
 
@@ -74,33 +75,4 @@ auto loxe::ClassObj::name() const -> const std::string&
 auto loxe::ClassObj::methods() -> methods_type&
 {
     return m_methods;
-}
-
-auto loxe::InstanceObj::call(Interpreter&, const args&) const -> Object
-{
-    // TODO: implement me
-    return {};
-}
-
-auto loxe::InstanceObj::arity() const -> std::size_t
-{
-    // TODO: implement me
-    return 0;
-}
-
-auto loxe::InstanceObj::to_string() const -> std::string
-{
-    return "<" + m_class.name() + " instance>";
-}
-
-auto loxe::InstanceObj::get(const Token& name) -> Object
-{
-    if (m_fields.contains(name.lexeme))          return m_fields[name.lexeme];
-    if (m_class.methods().contains(name.lexeme)) return m_class.methods()[name.lexeme]->bind(shared_from_this());
-    throw RuntimeError(name, "undefined property '" + name.lexeme + "'");
-}
-
-auto loxe::InstanceObj::set(const Token& name, Object value) -> Object&
-{
-    return (m_fields[name.lexeme] = std::move(value));
 }

@@ -70,28 +70,6 @@ namespace loxe
         Token        m_name;
         methods_type m_methods;
     };
-
-    class InstanceObj : public Callable, public std::enable_shared_from_this<InstanceObj>
-    {
-    public:
-        using class_type = ClassObj;
-        using field_type = std::unordered_map<std::string, Object>;
-
-    public:
-        InstanceObj(class_type class_obj)
-            : m_class(std::move(class_obj)), m_fields({}) {}
-
-        auto call(Interpreter&, const args&) const -> Object      override;
-        auto arity()                         const -> std::size_t override;
-        auto to_string()                     const -> std::string override;
-
-        auto get(const Token& name)               -> Object;
-        auto set(const Token& name, Object value) -> Object&;
-
-    private:
-        class_type m_class;
-        field_type m_fields;
-    };
 } // namespace loxe
 
 #endif // !LOXE_TREE_WALKER_CALLABLE_HPP

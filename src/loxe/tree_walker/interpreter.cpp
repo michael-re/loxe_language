@@ -1,6 +1,7 @@
 #include "loxe/common/utility.hpp"
 #include "loxe/tree_walker/error.hpp"
 #include "loxe/tree_walker/callable.hpp"
+#include "loxe/tree_walker/instance.hpp"
 #include "loxe/tree_walker/interpreter.hpp"
 
 loxe::Interpreter::Interpreter()
@@ -191,15 +192,10 @@ auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> void
 
 auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> void
 {
-    auto &value = evaluate(expr.object);
-    if (value.is<Object::callable>())
+    if (auto value = evaluate(expr.object); value.is<Object::instance>())
     {
-        auto &callable = value.as<Object::callable>();
-        if (auto instance = std::dynamic_pointer_cast<InstanceObj>(callable))
-        {
-            m_result = instance->get(expr.name);
-            return;
-        }
+        m_result = value.as<Object::instance>()->get(expr.name);
+        return;
     }
 
     m_result = Object();
@@ -232,16 +228,11 @@ auto loxe::Interpreter::visit(const ast::NumberExpr& expr) -> void
 
 auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> void
 {
-    auto object = std::move(evaluate(expr.object));
-    if (object.is<Object::callable>())
+    if (auto object = std::move(evaluate(expr.object)); object.is<Object::instance>())
     {
-        auto &callable = object.as<Object::callable>();
-        if (auto instance = std::dynamic_pointer_cast<InstanceObj>(callable))
-        {
-            auto value = std::move(evaluate(expr.value));
-            m_result = instance->set(expr.name, std::move(value));
-            return;
-        }
+        auto value = std::move(evaluate(expr.value));
+        m_result = object.as<Object::instance>()->set(expr.name, std::move(value));
+        return;
     }
 
     m_result = Object();

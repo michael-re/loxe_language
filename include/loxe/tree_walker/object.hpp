@@ -17,7 +17,8 @@ namespace loxe
         using number     = double;
         using string     = std::string;
         using callable   = std::shared_ptr<class Callable>;
-        using value_type = std::variant<nil, boolean, number, string, callable>;
+        using instance   = std::shared_ptr<class InstanceObj>;
+        using value_type = std::variant<nil, boolean, number, string, callable, instance>;
 
     public:
         Object()               : m_value(nil())            {}
@@ -25,6 +26,7 @@ namespace loxe
         Object(number   value) : m_value(value)            {}
         Object(string   value) : m_value(std::move(value)) {}
         Object(callable value) : m_value(std::move(value)) {}
+        Object(instance value) : m_value(std::move(value)) {}
 
         template<typename T>
         [[nodiscard]] constexpr auto is() const -> bool
