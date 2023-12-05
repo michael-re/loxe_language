@@ -109,7 +109,7 @@ auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> void
 {
-    m_result = m_environment->assign(expr.name, evaluate(expr.value));
+    m_result = (m_environment->assign_at(*expr.depth, expr.name, evaluate(expr.value)));
 }
 
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void
@@ -226,4 +226,10 @@ auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> void
 auto loxe::Interpreter::visit(const ast::VariableExpr& expr) -> void
 {
     m_result = m_environment->get(expr.name);
+}
+
+auto loxe::Interpreter::look_up_var(const Token& name, const ast::Expr& expr) -> Object&
+{
+    m_result = Object();
+    return (m_result = expr.depth ? m_environment->get_at(*expr.depth, name) : m_global->get(name));
 }

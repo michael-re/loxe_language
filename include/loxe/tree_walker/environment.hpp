@@ -4,6 +4,7 @@
 #define LOXE_TREE_WALKER_ENVIRONMENT_HPP
 
 #include <string>
+#include <cstdint>
 #include <unordered_map>
 
 #include "object.hpp"
@@ -23,6 +24,10 @@ namespace loxe
         auto define(const class Token& name, Object value) -> void;
         auto assign(const class Token& name, Object value) -> Object&;
         auto get   (const class Token& name)               -> Object&;
+
+        auto ancestor (std::size_t distance)                               -> Environment*;
+        auto assign_at(std::size_t depth, const Token& name, Object value) -> Object&;
+        auto get_at   (std::size_t depth, const Token& name)               -> Object&;
 
     private:
         Environment* m_enclosing;

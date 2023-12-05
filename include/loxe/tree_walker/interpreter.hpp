@@ -50,6 +50,9 @@ namespace loxe
         auto visit(const ast::VariableExpr& expr) -> void override;
 
     private:
+        auto look_up_var(const Token& name, const ast::Expr& expr) -> Object&;
+
+    private:
         Object  m_result;
         env_ptr m_global;
         env_ptr m_environment;

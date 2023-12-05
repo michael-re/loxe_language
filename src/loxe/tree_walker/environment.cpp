@@ -32,3 +32,26 @@ auto loxe::Environment::get(const Token& name) -> Object&
     if (m_enclosing)           return m_enclosing->get(name);
     throw RuntimeError(name, "'" + id + "' is an undefined symbol");
 }
+
+auto loxe::Environment::ancestor(std::size_t distance) -> Environment*
+{
+    auto ptr = this;
+    for (auto i = std::size_t{0}; ptr && i < distance; i++)
+        ptr = this->m_enclosing;
+
+    return ptr;
+}
+
+auto loxe::Environment::assign_at(std::size_t depth, const Token& name, Object value) -> Object&
+{
+    if (auto ptr = ancestor(depth)) return ptr->assign(name, std::move(value));
+    static constexpr auto message = "can't assign '{}' symbol because the enclosing does not exist at depth {}";
+    throw RuntimeError(name, utility::as_string(message, name.lexeme, depth));
+}
+
+auto loxe::Environment::get_at(std::size_t depth, const Token& name) -> Object&
+{
+    if (auto ptr = ancestor(depth)) return ptr->get(name);
+    static constexpr auto message = "can't access '{}' symbol because enclosing does not exist at depth {}";
+    throw RuntimeError(name, utility::as_string(message, name.lexeme, depth));
+}
