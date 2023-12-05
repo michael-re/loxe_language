@@ -32,8 +32,9 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 {
     try
     {
-        if (match(Token::Type::Fun)) return parse_fun_stmt();
-        if (match(Token::Type::Var)) return parse_var_stmt();
+        if (match(Token::Type::Class)) return parse_class_stmt();
+        if (match(Token::Type::Fun))   return parse_fun_stmt();
+        if (match(Token::Type::Var))   return parse_var_stmt();
         return parse_statement();
     }
     catch (const ParseError& e)
@@ -63,6 +64,19 @@ auto loxe::Parser::parse_block_stmt() -> ast::stmt_ptr
 
     consume(Token::Type::RightBrace, "expect '}' after block");
     return ast::BlockStmt::make(std::move(statements));
+}
+
+auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr
+{
+    auto name = consume(Token::Type::Identifier, "expect class name");
+    consume(Token::Type::LeftBrace, "expect '{' before class body");
+
+    auto methods = ast::method_list();
+    while (!check(Token::Type::RightBrace) && !at_end())
+        methods.emplace_back(  function("method"));
+
+    consume(Token::Type::RightBrace, "expect '}' after class body");
+    return ast::ClassStmt::make(std::move(name), std::move(methods));
 }
 
 auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr
@@ -300,7 +314,7 @@ auto loxe::Parser::finish_call(ast::expr_ptr callee) -> ast::expr_ptr
     return ast::CallExpr::make(std::move(paren), std::move(callee), std::move(args));
 }
 
-auto loxe::Parser::function(const std::string& kind) -> ast::stmt_ptr
+auto loxe::Parser::function(const std::string& kind) -> ast::fun_ptr
 {
     auto name = consume(Token::Type::Identifier, "expect " + kind + " name");
     consume(Token::Type::LeftParen, "expect '(' after " + kind + " name");

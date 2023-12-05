@@ -36,3 +36,38 @@ auto loxe::FunctionObj::to_string() const -> std::string
     if (!m_declaration) return "<error: function does not have a declaration>";
     return "<fn " + m_declaration->name.lexeme + ">";
 }
+
+auto loxe::ClassObj::call(Interpreter&, const args&) const -> Object
+{
+    // TODO: implement me
+    auto instance = std::make_shared<InstanceObj>(*this);
+    return { instance };
+}
+
+auto loxe::ClassObj::arity() const -> std::size_t
+{
+    // TODO: implement me
+    return 0;
+}
+
+auto loxe::ClassObj::to_string() const -> std::string
+{
+    return "<class " + name.lexeme + ">";
+}
+
+auto loxe::InstanceObj::call(Interpreter&, const args&) const -> Object
+{
+    // TODO: implement me
+    return {};
+}
+
+auto loxe::InstanceObj::arity() const -> std::size_t
+{
+    // TODO: implement me
+    return 0;
+}
+
+auto loxe::InstanceObj::to_string() const -> std::string
+{
+    return "<" + class_obj.name.lexeme + " instance>";
+}

@@ -42,6 +42,12 @@ auto loxe::Resolver::visit(ast::BlockStmt& stmt) -> void
     end_scope();
 }
 
+auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
+{
+    declare(stmt.name);
+    define(stmt.name);
+}
+
 auto loxe::Resolver::visit(ast::ExpressionStmt& stmt) -> void
 {
     resolve(stmt.expression);

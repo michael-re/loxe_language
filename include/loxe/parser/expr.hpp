@@ -78,7 +78,7 @@ namespace loxe::ast
         }
 
         template<typename... Args>
-        [[nodiscard]] static auto make(Args&&... args) -> expr_ptr
+        [[nodiscard]] static auto make(Args&&... args) -> std::unique_ptr<Derived>
         {
             return std::make_unique<Derived>(std::forward<Args>(args)...);
         }

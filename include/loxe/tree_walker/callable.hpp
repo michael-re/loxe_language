@@ -44,6 +44,36 @@ namespace loxe
         mutable Environment                m_closure;
         std::shared_ptr<ast::FunctionStmt> m_declaration;
     };
+
+    class ClassObj : public Callable
+    {
+    public:
+        ClassObj(Token name)
+            : name(std::move(name)) {}
+
+        auto call(Interpreter&, const args&) const -> Object      override;
+        auto arity()                         const -> std::size_t override;
+        auto to_string()                     const -> std::string override;
+
+        friend class InstanceObj;
+
+    private:
+        Token name;
+    };
+
+    class InstanceObj : public Callable
+    {
+    public:
+        InstanceObj(ClassObj class_obj)
+            : class_obj(std::move(class_obj)) {}
+
+        auto call(Interpreter&, const args&) const -> Object      override;
+        auto arity()                         const -> std::size_t override;
+        auto to_string()                     const -> std::string override;
+
+    private:
+        ClassObj class_obj;
+    };
 } // namespace loxe
 
 #endif // !LOXE_TREE_WALKER_CALLABLE_HPP

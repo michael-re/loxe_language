@@ -15,12 +15,16 @@ namespace loxe::ast
     using stmt_list  = std::vector<stmt_ptr>;
     using param_list = std::vector<Token>;
 
+    using fun_ptr     = std::unique_ptr<struct FunctionStmt>;
+    using method_list = std::vector<fun_ptr>; 
+
     struct Stmt
     {
         struct Visitor
         {
             virtual ~Visitor() = default;
             virtual auto visit(struct BlockStmt&)      -> void = 0;
+            virtual auto visit(struct ClassStmt&)      -> void = 0;
             virtual auto visit(struct ExpressionStmt&) -> void = 0;
             virtual auto visit(struct ForStmt&)        -> void = 0;
             virtual auto visit(struct FunctionStmt&)   -> void = 0;
@@ -35,6 +39,7 @@ namespace loxe::ast
         {
             virtual ~ConstVisitor() = default;
             virtual auto visit(const struct BlockStmt&)      -> void = 0;
+            virtual auto visit(const struct ClassStmt&)      -> void = 0;
             virtual auto visit(const struct ExpressionStmt&) -> void = 0;
             virtual auto visit(const struct ForStmt&)        -> void = 0;
             virtual auto visit(const struct FunctionStmt&)   -> void = 0;
@@ -71,7 +76,7 @@ namespace loxe::ast
         }
 
         template<typename... Args>
-        [[nodiscard]] static auto make(Args&&... args) -> stmt_ptr
+        [[nodiscard]] static auto make(Args&&... args) -> std::unique_ptr<Derived>
         {
             return std::make_unique<Derived>(std::forward<Args>(args)...);
         }
@@ -144,6 +149,22 @@ namespace loxe::ast
         Token      name;
         param_list params;
         stmt_ptr   body;
+    };
+
+    struct ClassStmt final : public StmtCRTP<ClassStmt>
+    {
+        ClassStmt(Token name, method_list methods)
+            : name(std::move(name)), methods(std::move(methods)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ClassStmt> override
+        {
+            auto mthds = method_list();
+            for (const auto& method : methods) mthds.emplace_back(method->make_clone());
+            return std::make_unique<ClassStmt>(name, std::move(mthds));
+        }
+
+        Token       name;
+        method_list methods;
     };
 
     struct IfStmt final : public StmtCRTP<IfStmt>

@@ -60,6 +60,11 @@ auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
     execute(stmt.statements, std::make_shared<Environment>(m_environment.get()));
 }
 
+auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
+{
+    m_environment->define(stmt.name, { std::make_shared<ClassObj>(stmt.name) });
+}
+
 auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
 {
     evaluate(stmt.expression);
