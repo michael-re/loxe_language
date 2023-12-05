@@ -76,7 +76,8 @@ namespace loxe
         auto arity()                         const -> std::size_t override;
         auto to_string()                     const -> std::string override;
 
-        auto get(const Token& name) -> Object&;
+        auto get(const Token& name)               -> Object&;
+        auto set(const Token& name, Object value) -> Object&;
 
     private:
         class_type m_class;

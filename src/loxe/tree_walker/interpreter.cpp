@@ -221,6 +221,24 @@ auto loxe::Interpreter::visit(const ast::NumberExpr& expr) -> void
     m_result = expr.value;
 }
 
+auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> void
+{
+    auto object = std::move(evaluate(expr.object));
+    if (object.is<Object::callable>())
+    {
+        auto &callable = object.as<Object::callable>();
+        if (auto instance = std::dynamic_pointer_cast<InstanceObj>(callable))
+        {
+            auto value = std::move(evaluate(expr.value));
+            m_result = instance->set(expr.name, std::move(value));
+            return;
+        }
+    }
+
+    m_result = Object();
+    throw RuntimeError(expr.name, "only instance have properties");
+}
+
 auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> void
 {
     m_result = expr.value;

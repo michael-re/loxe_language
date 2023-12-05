@@ -47,6 +47,7 @@ namespace loxe
         auto visit(ast::LogicalExpr&  expr) -> void override;
         auto visit(ast::NilExpr&      expr) -> void override;
         auto visit(ast::NumberExpr&   expr) -> void override;
+        auto visit(ast::SetExpr&      expr) -> void override;
         auto visit(ast::StringExpr&   expr) -> void override;
         auto visit(ast::UnaryExpr&    expr) -> void override;
         auto visit(ast::VariableExpr& expr) -> void override;

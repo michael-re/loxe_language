@@ -30,6 +30,7 @@ namespace loxe::ast
             virtual auto visit(struct LogicalExpr&)  -> void = 0;
             virtual auto visit(struct NilExpr&)      -> void = 0;
             virtual auto visit(struct NumberExpr&)   -> void = 0;
+            virtual auto visit(struct SetExpr&)      -> void = 0;
             virtual auto visit(struct StringExpr&)   -> void = 0;
             virtual auto visit(struct UnaryExpr&)    -> void = 0;
             virtual auto visit(struct VariableExpr&) -> void = 0;
@@ -47,6 +48,7 @@ namespace loxe::ast
             virtual auto visit(const struct LogicalExpr&)  -> void = 0;
             virtual auto visit(const struct NilExpr&)      -> void = 0;
             virtual auto visit(const struct NumberExpr&)   -> void = 0;
+            virtual auto visit(const struct SetExpr&)      -> void = 0;
             virtual auto visit(const struct StringExpr&)   -> void = 0;
             virtual auto visit(const struct UnaryExpr&)    -> void = 0;
             virtual auto visit(const struct VariableExpr&) -> void = 0;
@@ -233,6 +235,23 @@ namespace loxe::ast
 
         double value;
         Token  token;
+    };
+
+    struct SetExpr final : public ExprCRTP<SetExpr>
+    {
+        SetExpr(Token name, expr_ptr object, expr_ptr value)
+            : name(std::move(name)), object(std::move(object)), value(std::move(value)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<SetExpr> override
+        {
+            auto obj = object ? object->clone() : nullptr;
+            auto val = value  ? value->clone()  : nullptr;
+            return std::make_unique<SetExpr>(name, std::move(obj), std::move(val));
+        }
+
+        Token    name;
+        expr_ptr object;
+        expr_ptr value;
     };
 
     struct StringExpr final : public ExprCRTP<StringExpr>

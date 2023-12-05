@@ -77,3 +77,8 @@ auto loxe::InstanceObj::get(const Token& name) -> Object&
     if (m_fields.contains(name.lexeme)) return m_fields[name.lexeme];
     throw RuntimeError(name, "undefined property '" + name.lexeme + "'");
 }
+
+auto loxe::InstanceObj::set(const Token& name, Object value) -> Object&
+{
+    return (m_fields[name.lexeme] = std::move(value));
+}

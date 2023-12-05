@@ -167,6 +167,8 @@ auto loxe::Parser::parse_assignment() -> ast::expr_ptr
         auto value  = parse_assignment();
         if (auto var = dynamic_cast<ast::VariableExpr*>(expr.get()))
             return ast::AssignExpr::make(var->name, std::move(value));
+        else if (auto get = dynamic_cast<ast::GetExpr*>(expr.get()))
+            return ast::SetExpr::make(std::move(get->name), std::move(get->object), std::move(value));
 
         throw error(equals, "invalid assignment target");
     }

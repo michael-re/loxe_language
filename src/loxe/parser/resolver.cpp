@@ -150,6 +150,12 @@ auto loxe::Resolver::visit(ast::NumberExpr& expr) -> void
     utility::ignore(expr);
 }
 
+auto loxe::Resolver::visit(ast::SetExpr& expr) -> void
+{
+    resolve(expr.value);
+    resolve(expr.object);
+}
+
 auto loxe::Resolver::visit(ast::StringExpr& expr) -> void
 {
     utility::ignore(expr);
