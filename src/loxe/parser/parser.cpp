@@ -298,6 +298,7 @@ auto loxe::Parser::parse_primary() -> ast::expr_ptr
     if (match(Token::Type::Number))     return ast::NumberExpr::make(previous());
     if (match(Token::Type::String))     return ast::StringExpr::make(previous());
     if (match(Token::Type::Identifier)) return ast::VariableExpr::make(previous());
+    if (match(Token::Type::This))       return ast::ThisExpr::make(previous());
 
     if (match(Token::Type::LeftParen))
     {

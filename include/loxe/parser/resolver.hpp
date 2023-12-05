@@ -49,6 +49,7 @@ namespace loxe
         auto visit(ast::NumberExpr&   expr) -> void override;
         auto visit(ast::SetExpr&      expr) -> void override;
         auto visit(ast::StringExpr&   expr) -> void override;
+        auto visit(ast::ThisExpr&     expr) -> void override;
         auto visit(ast::UnaryExpr&    expr) -> void override;
         auto visit(ast::VariableExpr& expr) -> void override;
 
@@ -58,6 +59,12 @@ namespace loxe
             None,
             Method,
             Function,
+        };
+
+        enum class ClsType
+        {
+            None,
+            Class,
         };
 
     private:
@@ -76,6 +83,7 @@ namespace loxe
         bool    m_error    = false;
         stack   m_scopes   = {};
         FunType m_fun_type = FunType::None;
+        ClsType m_cls_type = ClsType::None;
     };
 } // namespace loxe
 

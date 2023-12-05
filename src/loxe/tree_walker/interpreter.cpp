@@ -248,6 +248,11 @@ auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> void
     m_result = expr.value;
 }
 
+auto loxe::Interpreter::visit(const ast::ThisExpr& expr) -> void
+{
+    look_up_var(expr.keyword, expr);
+}
+
 auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> void
 {
     auto operand = std::move(evaluate(expr.operand));

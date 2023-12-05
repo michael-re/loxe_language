@@ -18,6 +18,7 @@ namespace loxe
 {
     class Interpreter;
     class Environment;
+    class InstanceObj;
 
     class Callable
     {
@@ -40,6 +41,8 @@ namespace loxe
         auto call(Interpreter&, const args&) const -> Object      override;
         auto arity()                         const -> std::size_t override;
         auto to_string()                     const -> std::string override;
+
+        auto bind(std::shared_ptr<InstanceObj>) -> Object;
 
     private:
         mutable Environment                m_closure;
@@ -67,7 +70,7 @@ namespace loxe
         methods_type m_methods;
     };
 
-    class InstanceObj : public Callable
+    class InstanceObj : public Callable, public std::enable_shared_from_this<InstanceObj>
     {
     public:
         using class_type = ClassObj;

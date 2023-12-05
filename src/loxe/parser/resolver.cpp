@@ -44,12 +44,21 @@ auto loxe::Resolver::visit(ast::BlockStmt& stmt) -> void
 
 auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
 {
+    const auto enclosing = m_cls_type;
+    m_cls_type = ClsType::Class;
+
     declare(stmt.name);
     define(stmt.name);
 
-    const auto type = FunType::Method;
+    begin_scope();
+    m_scopes.back()["this"] = true;
+
+    const auto fun_type = FunType::Method;
     for (const auto& method : stmt.methods)
-        resolve_function(*(method.get()), type);
+        resolve_function(*(method.get()), fun_type);
+
+    end_scope();
+    m_cls_type = enclosing;
 }
 
 auto loxe::Resolver::visit(ast::ExpressionStmt& stmt) -> void
@@ -163,6 +172,16 @@ auto loxe::Resolver::visit(ast::SetExpr& expr) -> void
 auto loxe::Resolver::visit(ast::StringExpr& expr) -> void
 {
     utility::ignore(expr);
+}
+
+auto loxe::Resolver::visit(ast::ThisExpr& expr) -> void
+{
+    if (m_cls_type == ClsType::None)
+    {
+        error(expr.keyword, "can't use 'this' outside of class");
+        return;
+    }
+    resolve_local(expr, expr.keyword);
 }
 
 auto loxe::Resolver::visit(ast::UnaryExpr& expr) -> void

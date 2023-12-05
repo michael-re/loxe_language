@@ -32,6 +32,7 @@ namespace loxe::ast
             virtual auto visit(struct NumberExpr&)   -> void = 0;
             virtual auto visit(struct SetExpr&)      -> void = 0;
             virtual auto visit(struct StringExpr&)   -> void = 0;
+            virtual auto visit(struct ThisExpr&)     -> void = 0;
             virtual auto visit(struct UnaryExpr&)    -> void = 0;
             virtual auto visit(struct VariableExpr&) -> void = 0;
         };
@@ -50,6 +51,7 @@ namespace loxe::ast
             virtual auto visit(const struct NumberExpr&)   -> void = 0;
             virtual auto visit(const struct SetExpr&)      -> void = 0;
             virtual auto visit(const struct StringExpr&)   -> void = 0;
+            virtual auto visit(const struct ThisExpr&)     -> void = 0;
             virtual auto visit(const struct UnaryExpr&)    -> void = 0;
             virtual auto visit(const struct VariableExpr&) -> void = 0;
         };
@@ -269,6 +271,19 @@ namespace loxe::ast
 
         std::string value;
         Token       token;
+    };
+
+    struct ThisExpr final : public ExprCRTP<ThisExpr>
+    {
+        ThisExpr(Token keyword)
+            : keyword(std::move(keyword)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ThisExpr> override
+        {
+            return std::make_unique<ThisExpr>(*this);
+        }
+
+        Token keyword;
     };
 
     struct UnaryExpr final : public ExprCRTP<UnaryExpr>

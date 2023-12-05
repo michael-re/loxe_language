@@ -37,6 +37,13 @@ auto loxe::FunctionObj::to_string() const -> std::string
     return "<fn " + m_declaration->name.lexeme + ">";
 }
 
+auto loxe::FunctionObj::bind(std::shared_ptr<InstanceObj> instance) -> Object
+{
+    auto environment = Environment(&m_closure);
+    environment.define("this", { std::move(instance) });
+    return { std::make_shared<FunctionObj>(this->m_declaration->make_clone(), std::move(environment)) };
+}
+
 auto loxe::ClassObj::call(Interpreter&, const args&) const -> Object
 {
     // TODO: implement me
@@ -85,7 +92,7 @@ auto loxe::InstanceObj::to_string() const -> std::string
 auto loxe::InstanceObj::get(const Token& name) -> Object
 {
     if (m_fields.contains(name.lexeme))          return m_fields[name.lexeme];
-    if (m_class.methods().contains(name.lexeme)) return { m_class.methods()[name.lexeme] };
+    if (m_class.methods().contains(name.lexeme)) return m_class.methods()[name.lexeme]->bind(shared_from_this());
     throw RuntimeError(name, "undefined property '" + name.lexeme + "'");
 }
 
