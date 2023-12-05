@@ -52,7 +52,17 @@ auto loxe::ClassObj::arity() const -> std::size_t
 
 auto loxe::ClassObj::to_string() const -> std::string
 {
-    return "<class " + name.lexeme + ">";
+    return "<class " + m_name.lexeme + ">";
+}
+
+auto loxe::ClassObj::name() const -> const std::string&
+{
+    return m_name.lexeme;
+}
+
+auto loxe::ClassObj::methods() -> methods_type&
+{
+    return m_methods;
 }
 
 auto loxe::InstanceObj::call(Interpreter&, const args&) const -> Object
@@ -69,12 +79,13 @@ auto loxe::InstanceObj::arity() const -> std::size_t
 
 auto loxe::InstanceObj::to_string() const -> std::string
 {
-    return "<" + m_class.name.lexeme + " instance>";
+    return "<" + m_class.name() + " instance>";
 }
 
-auto loxe::InstanceObj::get(const Token& name) -> Object&
+auto loxe::InstanceObj::get(const Token& name) -> Object
 {
-    if (m_fields.contains(name.lexeme)) return m_fields[name.lexeme];
+    if (m_fields.contains(name.lexeme))          return m_fields[name.lexeme];
+    if (m_class.methods().contains(name.lexeme)) return { m_class.methods()[name.lexeme] };
     throw RuntimeError(name, "undefined property '" + name.lexeme + "'");
 }
 

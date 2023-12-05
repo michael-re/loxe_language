@@ -56,6 +56,7 @@ namespace loxe
         enum class FunType
         {
             None,
+            Method,
             Function,
         };
 

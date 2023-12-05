@@ -49,17 +49,22 @@ namespace loxe
     class ClassObj : public Callable
     {
     public:
-        ClassObj(Token name)
-            : name(std::move(name)) {}
+        using methods_type = std::unordered_map<std::string, std::shared_ptr<FunctionObj>>;
+
+    public:
+        ClassObj(Token name, methods_type methods)
+            : m_name(std::move(name)), m_methods(std::move(methods)) {}
 
         auto call(Interpreter&, const args&) const -> Object      override;
         auto arity()                         const -> std::size_t override;
         auto to_string()                     const -> std::string override;
 
-        friend class InstanceObj;
+        auto name() const -> const std::string&;
+        auto methods() -> methods_type&;
 
     private:
-        Token name;
+        Token        m_name;
+        methods_type m_methods;
     };
 
     class InstanceObj : public Callable
@@ -76,7 +81,7 @@ namespace loxe
         auto arity()                         const -> std::size_t override;
         auto to_string()                     const -> std::string override;
 
-        auto get(const Token& name)               -> Object&;
+        auto get(const Token& name)               -> Object;
         auto set(const Token& name, Object value) -> Object&;
 
     private:

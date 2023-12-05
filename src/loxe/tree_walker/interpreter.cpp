@@ -62,7 +62,11 @@ auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
 {
-    m_environment->define(stmt.name, { std::make_shared<ClassObj>(stmt.name) });
+    auto methods = ClassObj::methods_type();
+    for (const auto& method : stmt.methods)
+        methods[method->name.lexeme] = std::make_shared<FunctionObj>(method->make_clone(), m_environment.get());
+
+    m_environment->define(stmt.name, { std::make_shared<ClassObj>(stmt.name, std::move(methods)) });
 }
 
 auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void

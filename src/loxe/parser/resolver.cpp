@@ -46,6 +46,10 @@ auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
 {
     declare(stmt.name);
     define(stmt.name);
+
+    const auto type = FunType::Method;
+    for (const auto& method : stmt.methods)
+        resolve_function(*(method.get()), type);
 }
 
 auto loxe::Resolver::visit(ast::ExpressionStmt& stmt) -> void
