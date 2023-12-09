@@ -43,8 +43,8 @@ auto loxe::Environment::get(const std::string& name) -> Object&
 auto loxe::Environment::ancestor(std::size_t distance) -> Environment*
 {
     auto ptr = this;
-    for (auto i = std::size_t{0}; ptr && i < distance; i++)
-        ptr = this->m_enclosing;
+    for (auto i = std::size_t{1}; ptr && i < distance; i++)
+        ptr = ptr->m_enclosing;
 
     return ptr;
 }

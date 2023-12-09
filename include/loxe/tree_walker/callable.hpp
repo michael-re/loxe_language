@@ -11,7 +11,6 @@
 
 #include "loxe/parser/stmt.hpp"
 
-#include "environment.hpp"
 #include "object.hpp"
 
 namespace loxe
@@ -35,7 +34,7 @@ namespace loxe
     class FunctionObj : public Callable
     {
     public:
-        FunctionObj(std::shared_ptr<ast::FunctionStmt> declaration, Environment closure, bool init = false)
+        FunctionObj(std::shared_ptr<ast::FunctionStmt> declaration, std::shared_ptr<Environment> closure, bool init = false)
             : m_init(init), m_closure(std::move(closure)), m_declaration(std::move(declaration)) {}
 
         auto call(Interpreter&, const args&) const -> Object      override;
@@ -45,9 +44,9 @@ namespace loxe
         auto bind(std::shared_ptr<InstanceObj>) -> Object;
 
     private:
-        bool                               m_init;
-        mutable Environment                m_closure;
-        std::shared_ptr<ast::FunctionStmt> m_declaration;
+        bool                                 m_init;
+        mutable std::shared_ptr<Environment> m_closure;
+        std::shared_ptr<ast::FunctionStmt>   m_declaration;
     };
 
     class ClassObj : public Callable

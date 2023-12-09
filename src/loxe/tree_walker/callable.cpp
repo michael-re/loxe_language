@@ -9,7 +9,7 @@ auto loxe::FunctionObj::call(Interpreter& interpreter, const args& args) const -
     if (!m_declaration)
         throw Exception("can't call undefined function");
 
-    auto environment = std::make_shared<Environment>(&m_closure);
+    auto environment = std::make_shared<Environment>(m_closure.get());
     for (auto i = args::size_type{0}; i < m_declaration->params.size(); i++)
         environment->define(m_declaration->params[i].lexeme, args[i]);
 
@@ -20,11 +20,11 @@ auto loxe::FunctionObj::call(Interpreter& interpreter, const args& args) const -
     }
     catch (ReturnError& e)
     {
-        if (m_init) return m_closure.get_at(0, "this");
+        if (m_init) return m_closure->get_at(0, "this");
         return std::move(e.value);
     }
 
-    return m_init ? m_closure.get_at(0, "this") : Object();
+    return m_init ? m_closure->get_at(0, "this") : Object();
 }
 
 auto loxe::FunctionObj::arity() const -> std::size_t
@@ -41,9 +41,9 @@ auto loxe::FunctionObj::to_string() const -> std::string
 
 auto loxe::FunctionObj::bind(std::shared_ptr<InstanceObj> instance) -> Object
 {
-    auto environment = Environment(&m_closure);
-    environment.define("this", { std::move(instance) });
-    return { std::make_shared<FunctionObj>(this->m_declaration->make_clone(), std::move(environment), m_init) };
+    auto environment = std::make_shared<Environment>(m_closure.get());
+    environment->define("this", { std::move(instance) });
+    return { std::make_shared<FunctionObj>(m_declaration, std::move(environment), m_init) };
 }
 
 auto loxe::ClassObj::call(Interpreter& interpreter, const args& args) const -> Object
