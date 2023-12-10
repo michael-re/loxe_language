@@ -9,8 +9,8 @@ auto loxe::InstanceObj::to_string() const -> std::string
 auto loxe::InstanceObj::get(const Token& name) -> Object
 {
     const auto& id = name.lexeme;
-    if (m_fields.contains(id))          return m_fields[id];
-    if (m_class.methods().contains(id)) return m_class.methods()[id]->bind(shared_from_this());
+    if (m_fields.contains(id))               return m_fields[id];
+    if (auto it = m_class.find_method(name)) return it->bind(shared_from_this());
     throw RuntimeError(name, "undefined property '" + id + "'");
 }
 

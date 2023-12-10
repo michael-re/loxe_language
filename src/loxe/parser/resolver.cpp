@@ -50,6 +50,13 @@ auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
     declare(stmt.name);
     define(stmt.name);
 
+    auto superclass = dynamic_cast<ast::VariableExpr*>(stmt.superclass.get());
+    if (superclass && superclass->name.lexeme == stmt.name.lexeme)
+        error(superclass->name, "class can't inherit from itself");
+
+    if (superclass)
+        resolve(stmt.superclass);
+
     begin_scope();
     m_scopes.back()["this"] = true;
 

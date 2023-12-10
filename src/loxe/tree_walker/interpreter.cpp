@@ -61,6 +61,20 @@ auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
 {
+    auto super = ClassObj::super_type(nullptr);
+    if (stmt.superclass)
+    { 
+        auto superclass  = evaluate(stmt.superclass);
+        auto is_callable = superclass.is<Object::callable>();
+        auto as_callable = is_callable ? superclass.as<Object::callable>() : nullptr;
+        super = std::dynamic_pointer_cast<ClassObj>(as_callable);
+        if (!super)
+        {
+            auto super_expr = dynamic_cast<ast::VariableExpr*>(stmt.superclass.get());
+            throw RuntimeError(super_expr->name, "superclass must be a class");
+        }
+    }
+
     auto methods     = ClassObj::methods_type();
     auto environment = std::make_shared<Environment>(m_environment.get());
     for (const auto& method : stmt.methods)
@@ -70,7 +84,7 @@ auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
         methods[method->name.lexeme] = std::make_shared<FunctionObj>(std::move(dec), environment, init);
     }
 
-    auto class_dec = std::make_shared<ClassObj>(stmt.name, std::move(methods));
+    auto class_dec = std::make_shared<ClassObj>(stmt.name, std::move(methods), std::move(super));
     m_environment->define(stmt.name, { std::move(class_dec) });
 }
 

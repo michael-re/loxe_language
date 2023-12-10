@@ -68,7 +68,14 @@ auto loxe::Parser::parse_block_stmt() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr
 {
-    auto name = consume(Token::Type::Identifier, "expect class name");
+    auto name       = consume(Token::Type::Identifier, "expect class name");
+    auto superclass = ast::expr_ptr(nullptr);
+    if (match(Token::Type::Less))
+    {
+        consume(Token::Type::Identifier, "expect superclass name");
+        superclass = ast::VariableExpr::make(previous());
+    }
+
     consume(Token::Type::LeftBrace, "expect '{' before class body");
 
     auto methods = ast::method_list();
@@ -76,7 +83,7 @@ auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr
         methods.emplace_back(  function("method"));
 
     consume(Token::Type::RightBrace, "expect '}' after class body");
-    return ast::ClassStmt::make(std::move(name), std::move(methods));
+    return ast::ClassStmt::make(std::move(name), std::move(superclass), std::move(methods));
 }
 
 auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr

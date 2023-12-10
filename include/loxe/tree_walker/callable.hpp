@@ -58,21 +58,24 @@ namespace loxe
     class ClassObj : public Callable
     {
     public:
-        using methods_type = std::unordered_map<std::string, std::shared_ptr<FunctionObj>>;
+        using fun_ptr      = std::shared_ptr<FunctionObj>;
+        using super_type   = std::shared_ptr<ClassObj>;
+        using methods_type = std::unordered_map<std::string, fun_ptr>;
 
     public:
-        ClassObj(Token name, methods_type methods)
-            : m_name(std::move(name)), m_methods(std::move(methods)) {}
+        ClassObj(Token name, methods_type methods, super_type superclass)
+            : m_name(std::move(name)), m_superclass(std::move(superclass)), m_methods(std::move(methods)) {}
 
         auto call(Interpreter&, args) const -> Object      override;
         auto arity()                  const -> std::size_t override;
         auto to_string()              const -> std::string override;
 
-        auto name() const -> const std::string&;
-        auto methods()    -> methods_type&;
+        auto name()                         const -> const std::string&;
+        auto find_method(const Token& name) const -> fun_ptr;
 
     private:
         Token        m_name;
+        super_type   m_superclass;
         methods_type m_methods;
     };
 } // namespace loxe

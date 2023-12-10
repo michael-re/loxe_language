@@ -74,7 +74,10 @@ auto loxe::ClassObj::name() const -> const std::string&
     return m_name.lexeme;
 }
 
-auto loxe::ClassObj::methods() -> methods_type&
+auto loxe::ClassObj::find_method(const Token& name) const -> fun_ptr
 {
-    return m_methods;
+    const auto& id = name.lexeme;
+    if (auto it = m_methods.find(id); it != m_methods.end()) return it->second;
+    if (m_superclass)                                        return m_superclass->find_method(name);
+    return nullptr;
 }

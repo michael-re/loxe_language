@@ -457,17 +457,19 @@ namespace loxe::ast
 
     struct ClassStmt final : public StmtCRTP<ClassStmt>
     {
-        ClassStmt(Token name, method_list methods)
-            : name(std::move(name)), methods(std::move(methods)) {}
+        ClassStmt(Token name, expr_ptr superclass, method_list methods)
+            : name(std::move(name)), superclass(std::move(superclass)), methods(std::move(methods)) {}
 
         [[nodiscard]] auto make_clone() const -> std::unique_ptr<ClassStmt> override
         {
             auto mthds = method_list();
+            auto super = superclass ? superclass->clone() : nullptr;
             for (const auto& method : methods) mthds.emplace_back(method->make_clone());
-            return std::make_unique<ClassStmt>(name, std::move(mthds));
+            return std::make_unique<ClassStmt>(name, std::move(super), std::move(mthds));
         }
 
         Token       name;
+        expr_ptr    superclass;
         method_list methods;
     };
 
