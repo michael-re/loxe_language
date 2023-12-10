@@ -8,9 +8,10 @@ auto loxe::InstanceObj::to_string() const -> std::string
 
 auto loxe::InstanceObj::get(const Token& name) -> Object
 {
-    if (m_fields.contains(name.lexeme))          return m_fields[name.lexeme];
-    if (m_class.methods().contains(name.lexeme)) return m_class.methods()[name.lexeme]->bind(shared_from_this());
-    throw RuntimeError(name, "undefined property '" + name.lexeme + "'");
+    const auto& id = name.lexeme;
+    if (m_fields.contains(id))          return m_fields[id];
+    if (m_class.methods().contains(id)) return m_class.methods()[id]->bind(shared_from_this());
+    throw RuntimeError(name, "undefined property '" + id + "'");
 }
 
 auto loxe::InstanceObj::set(const Token& name, Object value) -> Object&

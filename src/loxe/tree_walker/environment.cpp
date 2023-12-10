@@ -2,13 +2,6 @@
 #include "loxe/tree_walker/error.hpp"
 #include "loxe/parser/token.hpp"
 
-auto loxe::Environment::define(const std::string& name, Object value) -> void
-{
-    if (m_values.contains(name))
-        throw RuntimeError(Token(), "symbol already define with name '" + name + "' in the current scope");
-    m_values[name] = std::move(value);
-}
-
 auto loxe::Environment::define(const Token& name, Object value) -> void
 {
     const auto& id = name.lexeme;
@@ -17,7 +10,7 @@ auto loxe::Environment::define(const Token& name, Object value) -> void
     m_values[id] = std::move(value);
 }
 
-auto loxe::Environment::assign(const Token& name, Object value) -> Object&
+auto loxe::Environment::assign(const Token& name, Object value) -> const Object&
 {
     const auto& id = name.lexeme;
     if (m_values.contains(id)) return (m_values[id] = std::move(value));
@@ -25,47 +18,34 @@ auto loxe::Environment::assign(const Token& name, Object value) -> Object&
     throw RuntimeError(name, "'" + id + "' is an undefined symbol");
 }
 
-auto loxe::Environment::get(const Token& name) -> Object&
+auto loxe::Environment::access(const Token& name) const -> const Object&
 {
     const auto& id = name.lexeme;
-    if (m_values.contains(id)) return m_values[id];
-    if (m_enclosing)           return m_enclosing->get(name);
+    const auto& it = m_values.find(id);
+    if (it != m_values.end()) return it->second;
+    if (m_enclosing)          return m_enclosing->access(name);
     throw RuntimeError(name, "'" + id + "' is an undefined symbol");
 }
 
-auto loxe::Environment::get(const std::string& name) -> Object&
-{
-    if (m_values.contains(name)) return m_values[name];
-    if (m_enclosing)             return m_enclosing->get(name);
-    throw RuntimeError({}, "'" + name + "' is an undefined symbol");
-}
-
-auto loxe::Environment::ancestor(std::size_t distance) -> Environment*
+auto loxe::Environment::ancestor(std::size_t distance) const -> Environment*
 {
     auto ptr = this;
     for (auto i = std::size_t{1}; ptr && i < distance; i++)
         ptr = ptr->m_enclosing;
 
-    return ptr;
+    return const_cast<Environment*>(ptr);
 }
 
-auto loxe::Environment::assign_at(std::size_t depth, const Token& name, Object value) -> Object&
+auto loxe::Environment::assign_at(std::size_t depth, const Token& name, Object value) -> const Object&
 {
     if (auto ptr = ancestor(depth)) return ptr->assign(name, std::move(value));
     static constexpr auto message = "can't assign '{}' symbol because the enclosing does not exist at depth {}";
     throw RuntimeError(name, utility::as_string(message, name.lexeme, depth));
 }
 
-auto loxe::Environment::get_at(std::size_t depth, const Token& name) -> Object&
+auto loxe::Environment::access_at(std::size_t depth, const Token& name) const -> const Object&
 {
-    if (auto ptr = ancestor(depth)) return ptr->get(name);
+    if (auto ptr = ancestor(depth)) return ptr->access(name);
     static constexpr auto message = "can't access '{}' symbol because enclosing does not exist at depth {}";
     throw RuntimeError(name, utility::as_string(message, name.lexeme, depth));
-}
-
-auto loxe::Environment::get_at(std::size_t depth, const std::string& name) -> Object&
-{
-    if (auto ptr = ancestor(depth)) return ptr->get(name);
-    static constexpr auto message = "can't access '{}' symbol because enclosing does not exist at depth {}";
-    throw RuntimeError({}, utility::as_string(message, name, depth));
 }

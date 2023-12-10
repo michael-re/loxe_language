@@ -60,6 +60,7 @@ namespace loxe
 
             // information
             EndOfFile,
+            Implicit,
             Unknown,
         };
 

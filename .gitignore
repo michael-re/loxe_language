@@ -36,3 +36,4 @@ build/
 
 # IDE Stuff
 .vscode/
+.vs

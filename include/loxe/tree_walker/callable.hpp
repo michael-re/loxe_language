@@ -9,7 +9,8 @@
 #include <cstdint>
 #include <unordered_map>
 
-#include "loxe/parser/stmt.hpp"
+#include "loxe/parser/ast.hpp"
+#include "loxe/parser/token.hpp"
 
 #include "object.hpp"
 
@@ -26,27 +27,32 @@ namespace loxe
 
     public:
         virtual ~Callable() = default;
-        virtual auto call(Interpreter&, const args&) const -> Object      = 0;
-        virtual auto arity()                         const -> std::size_t = 0;
-        virtual auto to_string()                     const -> std::string = 0;
+        virtual auto call(Interpreter&, args) const -> Object      = 0;
+        virtual auto arity()                  const -> std::size_t = 0;
+        virtual auto to_string()              const -> std::string = 0;
     };
 
     class FunctionObj : public Callable
     {
     public:
-        FunctionObj(std::shared_ptr<ast::FunctionStmt> declaration, std::shared_ptr<Environment> closure, bool init = false)
+        using dec_ptr  = std::shared_ptr<ast::FunctionStmt>;
+        using env_ptr  = std::shared_ptr<Environment>;
+        using inst_ptr = std::shared_ptr<InstanceObj>;
+
+    public:
+        FunctionObj(dec_ptr declaration, env_ptr closure, bool init = false)
             : m_init(init), m_closure(std::move(closure)), m_declaration(std::move(declaration)) {}
 
-        auto call(Interpreter&, const args&) const -> Object      override;
-        auto arity()                         const -> std::size_t override;
-        auto to_string()                     const -> std::string override;
+        auto call(Interpreter&, args) const -> Object      override;
+        auto arity()                  const -> std::size_t override;
+        auto to_string()              const -> std::string override;
 
-        auto bind(std::shared_ptr<InstanceObj>) -> Object;
+        auto bind(inst_ptr instance) -> Object;
 
     private:
-        bool                                 m_init;
-        mutable std::shared_ptr<Environment> m_closure;
-        std::shared_ptr<ast::FunctionStmt>   m_declaration;
+        bool    m_init;
+        env_ptr m_closure;
+        dec_ptr m_declaration;
     };
 
     class ClassObj : public Callable
@@ -58,12 +64,12 @@ namespace loxe
         ClassObj(Token name, methods_type methods)
             : m_name(std::move(name)), m_methods(std::move(methods)) {}
 
-        auto call(Interpreter&, const args&) const -> Object      override;
-        auto arity()                         const -> std::size_t override;
-        auto to_string()                     const -> std::string override;
+        auto call(Interpreter&, args) const -> Object      override;
+        auto arity()                  const -> std::size_t override;
+        auto to_string()              const -> std::string override;
 
         auto name() const -> const std::string&;
-        auto methods() -> methods_type&;
+        auto methods()    -> methods_type&;
 
     private:
         Token        m_name;

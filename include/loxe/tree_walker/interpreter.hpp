@@ -5,15 +5,14 @@
 
 #include <memory>
 
-#include "loxe/parser/expr.hpp"
-#include "loxe/parser/stmt.hpp"
+#include "loxe/parser/ast.hpp"
 
 #include "object.hpp"
 #include "environment.hpp"
 
 namespace loxe
 {
-    class Interpreter : public ast::Stmt::ConstVisitor, public ast::Expr::ConstVisitor
+    class Interpreter : public ast::Stmt::const_visitor<void>, public ast::Expr::const_visitor<Object>
     {
     public:
         using env_ptr = std::shared_ptr<Environment>;
@@ -22,7 +21,7 @@ namespace loxe
         Interpreter();
 
         auto interpret(const ast::stmt_list& program)            -> void;
-        auto evaluate (const ast::expr_ptr&  expr)               -> Object&;
+        auto evaluate (const ast::expr_ptr&  expr)               -> Object;
         auto execute  (const ast::stmt_ptr&  stmt)               -> void;
         auto execute  (const ast::stmt_list& stmts, env_ptr env) -> void;
 
@@ -38,26 +37,25 @@ namespace loxe
         auto visit(const ast::VariableStmt&   stmt) -> void override;
         auto visit(const ast::WhileStmt&      stmt) -> void override;
 
-        auto visit(const ast::AssignExpr&   expr) -> void override;
-        auto visit(const ast::BinaryExpr&   expr) -> void override;
-        auto visit(const ast::BooleanExpr&  expr) -> void override;
-        auto visit(const ast::CallExpr&     expr) -> void override;
-        auto visit(const ast::GetExpr&      expr) -> void override;
-        auto visit(const ast::GroupingExpr& expr) -> void override;
-        auto visit(const ast::LogicalExpr&  expr) -> void override;
-        auto visit(const ast::NilExpr&      expr) -> void override;
-        auto visit(const ast::NumberExpr&   expr) -> void override;
-        auto visit(const ast::SetExpr&      expr) -> void override;
-        auto visit(const ast::StringExpr&   expr) -> void override;
-        auto visit(const ast::ThisExpr&     expr) -> void override;
-        auto visit(const ast::UnaryExpr&    expr) -> void override;
-        auto visit(const ast::VariableExpr& expr) -> void override;
+        auto visit(const ast::AssignExpr&   expr) -> Object override;
+        auto visit(const ast::BinaryExpr&   expr) -> Object override;
+        auto visit(const ast::BooleanExpr&  expr) -> Object override;
+        auto visit(const ast::CallExpr&     expr) -> Object override;
+        auto visit(const ast::GetExpr&      expr) -> Object override;
+        auto visit(const ast::GroupingExpr& expr) -> Object override;
+        auto visit(const ast::LogicalExpr&  expr) -> Object override;
+        auto visit(const ast::NilExpr&      expr) -> Object override;
+        auto visit(const ast::NumberExpr&   expr) -> Object override;
+        auto visit(const ast::SetExpr&      expr) -> Object override;
+        auto visit(const ast::StringExpr&   expr) -> Object override;
+        auto visit(const ast::ThisExpr&     expr) -> Object override;
+        auto visit(const ast::UnaryExpr&    expr) -> Object override;
+        auto visit(const ast::VariableExpr& expr) -> Object override;
 
     private:
-        auto look_up_var(const Token& name, const ast::Expr& expr) -> Object&;
+        auto look_up_var(const Token& name, const ast::Expr& expr) -> const Object&;
 
     private:
-        Object  m_result;
         env_ptr m_global;
         env_ptr m_environment;
     };

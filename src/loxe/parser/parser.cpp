@@ -308,7 +308,6 @@ auto loxe::Parser::parse_primary() -> ast::expr_ptr
     }
 
     throw error(current(), "expect expression");
-    return {}; // unreachable
 }
 
 auto loxe::Parser::finish_call(ast::expr_ptr callee) -> ast::expr_ptr
@@ -381,7 +380,6 @@ auto loxe::Parser::consume(Token::Type type, std::string msg) -> Token
 {
     if (check(type)) return next();
     throw error(current(), std::move(msg));
-    return {}; // unreachable
 }
 
 auto loxe::Parser::error(Token token, std::string msg) -> ParseError

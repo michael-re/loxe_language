@@ -6,12 +6,11 @@
 #include <vector>
 #include <unordered_map>
 
-#include "expr.hpp"
-#include "stmt.hpp"
+#include "ast.hpp"
 
 namespace loxe
 {
-    class Resolver : public ast::Stmt::Visitor, public ast::Expr::Visitor
+    class Resolver : public ast::Stmt::visitor<void>, public ast::Expr::visitor<void>
     {
     public:
         using map   = std::unordered_map<std::string, bool>;

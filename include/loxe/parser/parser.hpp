@@ -7,8 +7,7 @@
 
 #include "loxe/common/except.hpp"
 
-#include "expr.hpp"
-#include "stmt.hpp"
+#include "ast.hpp"
 #include "lexer.hpp"
 #include "token.hpp"
 

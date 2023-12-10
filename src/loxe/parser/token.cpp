@@ -63,6 +63,7 @@ auto loxe::Token::type_string() const -> std::string
 
         // information
         "Type::EndOfFile",
+        "Type::Implicit",
         "Type::Unknown",
     };
 

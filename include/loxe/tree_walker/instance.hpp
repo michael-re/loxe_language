@@ -33,5 +33,4 @@ namespace loxe
     };
 } // namespace loxe
 
-
-#endif // LOXE_TREE_WALKER_INSTANCE_HPP
+#endif // !LOXE_TREE_WALKER_INSTANCE_HPP

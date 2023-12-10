@@ -2,10 +2,11 @@
 #include "loxe/tree_walker/error.hpp"
 #include "loxe/tree_walker/callable.hpp"
 #include "loxe/tree_walker/instance.hpp"
+#include "loxe/tree_walker/environment.hpp"
 #include "loxe/tree_walker/interpreter.hpp"
 
 loxe::Interpreter::Interpreter()
-    : m_result(), m_global(std::make_shared<Environment>()), m_environment(m_global) {}
+    : m_global(std::make_shared<Environment>()), m_environment(m_global) {}
 
 auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
 {
@@ -14,18 +15,15 @@ auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
         for (const auto& stmt : program)
             execute(stmt);
     }
-    catch (const Exception& e)
+    catch (const RuntimeError& e)
     {
         utility::println(std::cerr, "{}", e.what());
     }
 }
 
-auto loxe::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object&
+auto loxe::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object
 {
-    if (expr) expr->accept(*this);
-    else      m_result = Object();
-
-    return m_result;
+    return expr ? expr->accept(*this) : Object();
 }
 
 auto loxe::Interpreter::execute(const ast::stmt_ptr& stmt) -> void
@@ -63,16 +61,17 @@ auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
 {
-    auto methods = ClassObj::methods_type();
-    auto env = std::make_shared<Environment>(m_environment.get());
+    auto methods     = ClassObj::methods_type();
+    auto environment = std::make_shared<Environment>(m_environment.get());
     for (const auto& method : stmt.methods)
     {
         auto dec  = method->make_clone();
         auto init = method->name.lexeme == "init";
-        methods[method->name.lexeme] = std::make_shared<FunctionObj>(std::move(dec), env, init);
+        methods[method->name.lexeme] = std::make_shared<FunctionObj>(std::move(dec), environment, init);
     }
 
-    m_environment->define(stmt.name, { std::make_shared<ClassObj>(stmt.name, std::move(methods)) });
+    auto class_dec = std::make_shared<ClassObj>(stmt.name, std::move(methods));
+    m_environment->define(stmt.name, { std::move(class_dec) });
 }
 
 auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
@@ -88,9 +87,9 @@ auto loxe::Interpreter::visit(const ast::ForStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::FunctionStmt& stmt) -> void
 {
-    auto closure = std::make_shared<Environment>(m_environment.get());
+    auto closure  = std::make_shared<Environment>(m_environment.get());
     auto function = std::make_shared<FunctionObj>(stmt.make_clone(), std::move(closure));
-    m_environment->define(stmt.name, { function });
+    m_environment->define(stmt.name, { std::move(function) });
 }
 
 auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
@@ -108,13 +107,12 @@ auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::ReturnStmt& stmt) -> void
 {
-    throw ReturnError(stmt.value ? std::move(evaluate(stmt.value)) : Object());
+    throw ReturnError(evaluate(stmt.value));
 }
 
 auto loxe::Interpreter::visit(const ast::VariableStmt& stmt) -> void
 {
-    auto value = stmt.initializer ? evaluate(stmt.initializer) : Object();
-    m_environment->define(stmt.name, std::move(value));
+    m_environment->define(stmt.name, evaluate(stmt.initializer));
 }
 
 auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
@@ -123,159 +121,139 @@ auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
         execute(stmt.body);
 }
 
-auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> Object
 {
-    m_result = (m_environment->assign_at(*expr.depth, expr.name, evaluate(expr.value)));
+    if (auto value = evaluate(expr.value); expr.depth)
+        return m_environment->assign_at(*expr.depth, expr.name, evaluate(expr.value));
+    else
+        return m_global->assign(expr.name, evaluate(expr.value));
 }
 
-auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> Object
 {
     auto number = [&expr](const Object& object) -> Object::number {
         if (!object.is<Object::number>()) throw RuntimeError(expr.op, "operator requires a number");
         return object.as<Object::number>();
     };
 
-    auto lhs = std::move(evaluate(expr.lhs));
-    auto rhs = std::move(evaluate(expr.rhs));
-    m_result = Object();
+    auto lhs = evaluate(expr.lhs);
+    auto rhs = evaluate(expr.rhs);
 
     switch (expr.op.type)
     {
-        case Token::Type::BangEqual:  m_result = (lhs != rhs); break;
-        case Token::Type::EqualEqual: m_result = (lhs == rhs); break;
+        case Token::Type::BangEqual:  return { lhs != rhs };
+        case Token::Type::EqualEqual: return { lhs == rhs };
         case Token::Type::Plus:
             if (lhs.is<Object::string>() && rhs.is<Object::string>())
-            {
-                m_result = (lhs.as<Object::string>() + rhs.as<Object::string>());
-                break;
-            }
-
+                return { lhs.as<Object::string>() + rhs.as<Object::string>() };
             if (lhs.is<Object::number>() && rhs.is<Object::number>())
-            {
-                m_result = (lhs.as<Object::number>() + rhs.as<Object::number>());
-                break;
-            }
-
+                return { lhs.as<Object::number>() + rhs.as<Object::number>() };
             throw RuntimeError(expr.op, "'+' operator requires two numbers or strings");
             break;
-        case Token::Type::Minus:        m_result = number(lhs) -  number(rhs); break;
-        case Token::Type::Star:         m_result = number(lhs) *  number(rhs); break;
-        case Token::Type::Slash:        m_result = number(lhs) /  number(rhs); break;
-        case Token::Type::Greater:      m_result = number(lhs) >  number(rhs); break;
-        case Token::Type::GreaterEqual: m_result = number(lhs) >= number(rhs); break;
-        case Token::Type::Less:         m_result = number(lhs) <  number(rhs); break;
-        case Token::Type::LessEqual:    m_result = number(lhs) <= number(rhs); break;
+        case Token::Type::Minus:        return { number(lhs) -  number(rhs) };
+        case Token::Type::Star:         return { number(lhs) *  number(rhs) };
+        case Token::Type::Slash:        return { number(lhs) /  number(rhs) };
+        case Token::Type::Greater:      return { number(lhs) >  number(rhs) };
+        case Token::Type::GreaterEqual: return { number(lhs) >= number(rhs) };
+        case Token::Type::Less:         return { number(lhs) <  number(rhs) };
+        case Token::Type::LessEqual:    return { number(lhs) <= number(rhs) };
         default: throw RuntimeError(expr.op, "unrecognized binary operator: '" + expr.op.lexeme + "'");
     }
 }
 
-auto loxe::Interpreter::visit(const ast::BooleanExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::BooleanExpr& expr) -> Object
 {
-    m_result = expr.value;
+    return { expr.value };
 }
 
-auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> Object
 {
     auto callee = evaluate(expr.callee);
     auto args   = Callable::args();
+
+    args.reserve(expr.args.size());
     for (const auto& arg : expr.args)
-        args.emplace_back(std::move(evaluate(arg)));
+        args.push_back(evaluate(arg));
 
     if (!callee.is<Object::callable>())
         throw RuntimeError(expr.paren, "can only call functions and classes");
 
-    auto callable = callee.as<Object::callable>();
+    auto &callable = callee.as<Object::callable>();
     if (callable->arity() != args.size())
         throw RuntimeError(expr.paren, utility::as_string("expected {} args but got {}", callable-> arity(), args.size()));
 
-    m_result = std::move(callable->call(*this, args));
+    return callable->call(*this, std::move(args));
 }
 
-auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> Object
 {
     if (auto value = evaluate(expr.object); value.is<Object::instance>())
-    {
-        m_result = value.as<Object::instance>()->get(expr.name);
-        return;
-    }
-
-    m_result = Object();
+        return value.as<Object::instance>()->get(expr.name);
     throw RuntimeError(expr.name, "only instance have properties");
 }
 
-auto loxe::Interpreter::visit(const ast::GroupingExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::GroupingExpr& expr) -> Object
 {
-    evaluate(expr.expression);
+    return evaluate(expr.expression);
 }
 
-auto loxe::Interpreter::visit(const ast::LogicalExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::LogicalExpr& expr) -> Object
 {
-    auto &lhs = evaluate(expr.lhs);
-    if (expr.op.type == Token::Type::Or  && lhs.is_truthy())  return;
-    if (expr.op.type == Token::Type::And && !lhs.is_truthy()) return;
-    evaluate(expr.rhs);
+    auto lhs = evaluate(expr.lhs);
+    if (expr.op.type == Token::Type::Or  && lhs.is_truthy())  return lhs;
+    if (expr.op.type == Token::Type::And && !lhs.is_truthy()) return lhs;
+    return evaluate(expr.rhs);
 }
 
-auto loxe::Interpreter::visit(const ast::NilExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::NilExpr& expr) -> Object
 {
     utility::ignore(expr);
-    m_result = Object();
+    return {};
 }
 
-auto loxe::Interpreter::visit(const ast::NumberExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::NumberExpr& expr) -> Object
 {
-    m_result = expr.value;
+    return { expr.value };
 }
 
-auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> Object
 {
-    if (auto object = std::move(evaluate(expr.object)); object.is<Object::instance>())
-    {
-        auto value = std::move(evaluate(expr.value));
-        m_result = object.as<Object::instance>()->set(expr.name, std::move(value));
-        return;
-    }
-
-    m_result = Object();
+    if (auto object = evaluate(expr.object); object.is<Object::instance>())
+        return object.as<Object::instance>()->set(expr.name, evaluate(expr.value));
     throw RuntimeError(expr.name, "only instance have properties");
 }
 
-auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> Object
 {
-    m_result = expr.value;
+    return { expr.value };
 }
 
-auto loxe::Interpreter::visit(const ast::ThisExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::ThisExpr& expr) -> Object
 {
-    look_up_var(expr.keyword, expr);
+    return look_up_var(expr.keyword, expr);
 }
 
-auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> Object
 {
-    auto operand = std::move(evaluate(expr.operand));
-    switch (expr.op.type)
+    switch (auto operand = evaluate(expr.operand); expr.op.type)
     {
         case Token::Type::Minus:
             if (!operand.is<Object::number>())
                 throw RuntimeError(expr.op, "'-' unary operator requires a numbers");
-            m_result = -operand.as<Object::number>();
-            break;
+            return { -operand.as<Object::number>() };
         case Token::Type::Bang:
-            m_result = !operand.is_truthy();
-            break;
+            return { !operand.is_truthy() };
         default:
             throw RuntimeError(expr.op, "invalid unary operator");
-            break;
     }
 }
 
-auto loxe::Interpreter::visit(const ast::VariableExpr& expr) -> void
+auto loxe::Interpreter::visit(const ast::VariableExpr& expr) -> Object
 {
-    m_result = m_environment->get(expr.name);
+    return look_up_var(expr.name, expr);
 }
 
-auto loxe::Interpreter::look_up_var(const Token& name, const ast::Expr& expr) -> Object&
+auto loxe::Interpreter::look_up_var(const Token& name, const ast::Expr& expr) -> const Object&
 {
-    m_result = Object();
-    return (m_result = expr.depth ? m_environment->get_at(*expr.depth, name) : m_global->get(name));
+    return expr.depth ? m_environment->access_at(*expr.depth, name) : m_global->access(name);
 }

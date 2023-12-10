@@ -4,14 +4,16 @@
 #include "loxe/tree_walker/environment.hpp"
 #include "loxe/tree_walker/interpreter.hpp"
 
-auto loxe::FunctionObj::call(Interpreter& interpreter, const args& args) const -> Object
+auto loxe::FunctionObj::call(Interpreter& interpreter, args args) const -> Object
 {
+    static const auto implicit_this = Token(Token::Type::Implicit, -1, -1, "this");
+
     if (!m_declaration)
         throw Exception("can't call undefined function");
 
     auto environment = std::make_shared<Environment>(m_closure.get());
     for (auto i = args::size_type{0}; i < m_declaration->params.size(); i++)
-        environment->define(m_declaration->params[i].lexeme, args[i]);
+        environment->define(m_declaration->params[i], std::move(args[i]));
 
     try
     {
@@ -20,11 +22,10 @@ auto loxe::FunctionObj::call(Interpreter& interpreter, const args& args) const -
     }
     catch (ReturnError& e)
     {
-        if (m_init) return m_closure->get_at(0, "this");
-        return std::move(e.value);
+        return m_init ? m_closure->access_at(0, implicit_this) : std::move(e.value);
     }
 
-    return m_init ? m_closure->get_at(0, "this") : Object();
+    return m_init ? m_closure->access_at(0, implicit_this) : Object();
 }
 
 auto loxe::FunctionObj::arity() const -> std::size_t
@@ -39,18 +40,19 @@ auto loxe::FunctionObj::to_string() const -> std::string
     return "<fn " + m_declaration->name.lexeme + ">";
 }
 
-auto loxe::FunctionObj::bind(std::shared_ptr<InstanceObj> instance) -> Object
+auto loxe::FunctionObj::bind(inst_ptr instance) -> Object
 {
+    static const auto implicit_this = Token(Token::Type::Implicit, -1, -1, "this");
     auto environment = std::make_shared<Environment>(m_closure.get());
-    environment->define("this", { std::move(instance) });
+    environment->define(implicit_this, { std::move(instance) });
     return { std::make_shared<FunctionObj>(m_declaration, std::move(environment), m_init) };
 }
 
-auto loxe::ClassObj::call(Interpreter& interpreter, const args& args) const -> Object
+auto loxe::ClassObj::call(Interpreter& interpreter, args args) const -> Object
 {
     auto instance = std::make_shared<InstanceObj>(*this);
     if (auto init = m_methods.find("init"); init != m_methods.end())
-        init->second->bind(instance).as<Object::callable>()->call(interpreter, args);
+        init->second->bind(instance).as<Object::callable>()->call(interpreter, std::move(args));
 
     return { instance };
 }
