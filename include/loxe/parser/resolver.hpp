@@ -48,6 +48,7 @@ namespace loxe
         auto visit(ast::NumberExpr&   expr) -> void override;
         auto visit(ast::SetExpr&      expr) -> void override;
         auto visit(ast::StringExpr&   expr) -> void override;
+        auto visit(ast::SuperExpr&    expr) -> void override;
         auto visit(ast::ThisExpr&     expr) -> void override;
         auto visit(ast::UnaryExpr&    expr) -> void override;
         auto visit(ast::VariableExpr& expr) -> void override;
@@ -65,6 +66,7 @@ namespace loxe
         {
             Class,
             None,
+            SubClass,
         };
 
     private:

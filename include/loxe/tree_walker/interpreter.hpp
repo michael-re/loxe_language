@@ -48,6 +48,7 @@ namespace loxe
         auto visit(const ast::NumberExpr&   expr) -> Object override;
         auto visit(const ast::SetExpr&      expr) -> Object override;
         auto visit(const ast::StringExpr&   expr) -> Object override;
+        auto visit(const ast::SuperExpr&    expr) -> Object override;
         auto visit(const ast::ThisExpr&     expr) -> Object override;
         auto visit(const ast::UnaryExpr&    expr) -> Object override;
         auto visit(const ast::VariableExpr& expr) -> Object override;

@@ -61,6 +61,8 @@ auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
 {
+    static const auto implicit_super = Token(Token::Type::Implicit, -1, -1, "super");
+
     auto super = ClassObj::super_type(nullptr);
     if (stmt.superclass)
     { 
@@ -77,6 +79,8 @@ auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
 
     auto methods     = ClassObj::methods_type();
     auto environment = std::make_shared<Environment>(m_environment.get());
+    if (super) environment->define(implicit_super, { super });
+
     for (const auto& method : stmt.methods)
     {
         auto dec  = method->make_clone();
@@ -240,6 +244,18 @@ auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> Object
 auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> Object
 {
     return { expr.value };
+}
+
+auto loxe::Interpreter::visit(const ast::SuperExpr& expr) -> Object
+{
+    auto distance   = *expr.depth;
+    auto superclass = m_environment->access_at(distance, expr.keyword);
+    auto object     = m_environment->access_at(distance - 1, expr.method);
+    auto as_class   = std::dynamic_pointer_cast<ClassObj>(superclass.as<Object::callable>());
+
+    if (auto method = as_class->find_method(expr.method))
+        return method->bind(object.as<Object::instance>());
+    throw RuntimeError(expr.method, "undefined property '" + expr.method.lexeme + "'");
 }
 
 auto loxe::Interpreter::visit(const ast::ThisExpr& expr) -> Object

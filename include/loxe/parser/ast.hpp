@@ -52,6 +52,7 @@ namespace loxe::ast
             virtual auto visit(const_wrapper<IsConst, struct NumberExpr>&)   -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct SetExpr>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct StringExpr>&)   -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct SuperExpr>&)    -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ThisExpr>&)     -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct UnaryExpr>&)    -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct VariableExpr>&) -> R = 0;
@@ -343,6 +344,20 @@ namespace loxe::ast
 
         std::string value;
         Token       token;
+    };
+
+    struct SuperExpr final : public ExprCRTP<SuperExpr>
+    {
+        SuperExpr(Token keyword, Token method)
+            : keyword(std::move(keyword)), method(std::move(method)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<SuperExpr> override
+        {
+            return std::make_unique<SuperExpr>(*this);
+        }
+
+        Token keyword;
+        Token method;
     };
 
     struct ThisExpr final : public ExprCRTP<ThisExpr>

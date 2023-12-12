@@ -307,6 +307,14 @@ auto loxe::Parser::parse_primary() -> ast::expr_ptr
     if (match(Token::Type::Identifier)) return ast::VariableExpr::make(previous());
     if (match(Token::Type::This))       return ast::ThisExpr::make(previous());
 
+    if (match(Token::Type::Super))
+    {
+        auto keyword = previous();
+        consume(Token::Type::Dot, "expect '.' after 'super'");
+        auto method = consume(Token::Type::Identifier, "expect superclass method name");
+        return ast::SuperExpr::make(std::move(keyword), std::move(method));
+    }
+
     if (match(Token::Type::LeftParen))
     {
         auto expr = parse_expression();

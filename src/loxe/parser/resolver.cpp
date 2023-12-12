@@ -55,7 +55,12 @@ auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
         error(superclass->name, "class can't inherit from itself");
 
     if (superclass)
+    {
+        begin_scope();
+        m_scopes.back()["super"] = true;
+        m_cls_type = ClsType::SubClass;
         resolve(stmt.superclass);
+    }
 
     begin_scope();
     m_scopes.back()["this"] = true;
@@ -67,6 +72,7 @@ auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
     }
 
     end_scope();
+    if (superclass) end_scope();
     m_cls_type = enclosing;
 }
 
@@ -186,6 +192,16 @@ auto loxe::Resolver::visit(ast::SetExpr& expr) -> void
 auto loxe::Resolver::visit(ast::StringExpr& expr) -> void
 {
     utility::ignore(expr);
+}
+
+auto loxe::Resolver::visit(ast::SuperExpr& expr) -> void
+{
+    if (m_cls_type == ClsType::None)
+        error(expr.keyword, "can't use super outside of a class");
+    else if (m_cls_type != ClsType::SubClass)
+        error(expr.keyword, "can't use 'super' in a class with no superclass");
+
+    resolve_local(expr, expr.keyword);
 }
 
 auto loxe::Resolver::visit(ast::ThisExpr& expr) -> void
