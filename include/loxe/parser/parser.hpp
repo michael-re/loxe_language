@@ -41,6 +41,7 @@ namespace loxe
         [[nodiscard]] auto parse_while_stmt()  -> ast::stmt_ptr;
 
         [[nodiscard]] auto parse_expression()  -> ast::expr_ptr;
+        [[nodiscard]] auto parse_comma()       -> ast::expr_ptr;
         [[nodiscard]] auto parse_conditional() -> ast::expr_ptr;
         [[nodiscard]] auto parse_assignment()  -> ast::expr_ptr;
         [[nodiscard]] auto parse_logical_or()  -> ast::expr_ptr;

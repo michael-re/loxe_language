@@ -162,7 +162,18 @@ auto loxe::Parser::parse_while_stmt() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_expression() -> ast::expr_ptr
 {
-    return parse_conditional();
+    return parse_comma();
+}
+
+auto loxe::Parser::parse_comma() -> ast::expr_ptr
+{
+    auto exprs = ast::expr_list();
+    do
+    {
+        exprs.emplace_back(parse_conditional());
+    } while (match(Token::Type::Comma));
+
+    return exprs.size() == 1 ? std::move(exprs.front()) : ast::CommaExpr::make(std::move(exprs));
 }
 
 auto loxe::Parser::parse_conditional() -> ast::expr_ptr
@@ -346,7 +357,7 @@ auto loxe::Parser::finish_call(ast::expr_ptr callee) -> ast::expr_ptr
     {
         do
         {
-            args.emplace_back(parse_expression());
+            args.emplace_back(parse_conditional());
         } while (match(Token::Type::Comma));
     }
 

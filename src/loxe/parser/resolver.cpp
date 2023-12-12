@@ -157,6 +157,12 @@ auto loxe::Resolver::visit(ast::CallExpr& expr) -> void
         resolve(arg);
 }
 
+auto loxe::Resolver::visit(ast::CommaExpr& expr) -> void
+{
+    for (const auto& expression : expr.expressions)
+        resolve(expression);
+}
+
 auto loxe::Resolver::visit(ast::ConditionalExpr& expr) -> void
 {
     resolve(expr.condition);

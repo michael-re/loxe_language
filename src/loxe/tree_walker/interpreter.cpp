@@ -203,6 +203,14 @@ auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> Object
     return callable->call(*this, std::move(args));
 }
 
+auto loxe::Interpreter::visit(const ast::CommaExpr& expr) -> Object
+{
+    for (auto it = expr.expressions.begin() + 1; it < expr.expressions.end(); it++)
+        evaluate(*it);
+
+    return evaluate(expr.expressions.back());
+}
+
 auto loxe::Interpreter::visit(const ast::ConditionalExpr& expr) -> Object
 {
     auto condition = evaluate(expr.condition);

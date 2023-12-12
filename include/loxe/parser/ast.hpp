@@ -45,6 +45,7 @@ namespace loxe::ast
             virtual auto visit(const_wrapper<IsConst, struct BinaryExpr>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct BooleanExpr>&)     -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct CallExpr>&)        -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct CommaExpr>&)       -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ConditionalExpr>&) -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct GetExpr>&)         -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct GroupingExpr>&)    -> R = 0;
@@ -232,6 +233,21 @@ namespace loxe::ast
         Token     paren;
         expr_ptr  callee;
         expr_list args;
+    };
+
+    struct CommaExpr final : public ExprCRTP<CommaExpr>
+    {
+        CommaExpr(expr_list expressions)
+            : expressions(std::move(expressions)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<CommaExpr> override
+        {
+            auto exprs = expr_list();
+            for (const auto& expr : expressions) exprs.emplace_back(expr ? expr->clone() : nullptr);
+            return std::make_unique<CommaExpr>(std::move(exprs));
+        }
+
+        expr_list expressions;
     };
 
     struct ConditionalExpr final : public ExprCRTP<ConditionalExpr>
