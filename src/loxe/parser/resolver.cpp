@@ -157,6 +157,13 @@ auto loxe::Resolver::visit(ast::CallExpr& expr) -> void
         resolve(arg);
 }
 
+auto loxe::Resolver::visit(ast::ConditionalExpr& expr) -> void
+{
+    resolve(expr.condition);
+    resolve(expr.then_branch);
+    resolve(expr.else_branch);
+}
+
 auto loxe::Resolver::visit(ast::GetExpr& expr) -> void
 {
     resolve(expr.object);

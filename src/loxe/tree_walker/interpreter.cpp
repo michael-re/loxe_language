@@ -203,6 +203,12 @@ auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> Object
     return callable->call(*this, std::move(args));
 }
 
+auto loxe::Interpreter::visit(const ast::ConditionalExpr& expr) -> Object
+{
+    auto condition = evaluate(expr.condition);
+    return condition.is_truthy() ? evaluate(expr.then_branch) : evaluate(expr.else_branch);
+}
+
 auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> Object
 {
     if (auto value = evaluate(expr.object); value.is<Object::instance>())

@@ -13,12 +13,14 @@ namespace loxe
         enum class Type
         {
             // single-character tokens
+            Colon,
             Comma,
             Dot,
             LeftBrace,
             LeftParen,
             Minus,
             Plus,
+            Question,
             RightBrace,
             RightParen,
             Semicolon,

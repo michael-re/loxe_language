@@ -37,21 +37,22 @@ namespace loxe
         auto visit(ast::VariableStmt&   stmt) -> void override;
         auto visit(ast::WhileStmt&      stmt) -> void override;
 
-        auto visit(ast::AssignExpr&   expr) -> void override;
-        auto visit(ast::BinaryExpr&   expr) -> void override;
-        auto visit(ast::BooleanExpr&  expr) -> void override;
-        auto visit(ast::CallExpr&     expr) -> void override;
-        auto visit(ast::GetExpr&      expr) -> void override;
-        auto visit(ast::GroupingExpr& expr) -> void override;
-        auto visit(ast::LogicalExpr&  expr) -> void override;
-        auto visit(ast::NilExpr&      expr) -> void override;
-        auto visit(ast::NumberExpr&   expr) -> void override;
-        auto visit(ast::SetExpr&      expr) -> void override;
-        auto visit(ast::StringExpr&   expr) -> void override;
-        auto visit(ast::SuperExpr&    expr) -> void override;
-        auto visit(ast::ThisExpr&     expr) -> void override;
-        auto visit(ast::UnaryExpr&    expr) -> void override;
-        auto visit(ast::VariableExpr& expr) -> void override;
+        auto visit(ast::AssignExpr&      expr) -> void override;
+        auto visit(ast::BinaryExpr&      expr) -> void override;
+        auto visit(ast::BooleanExpr&     expr) -> void override;
+        auto visit(ast::CallExpr&        expr) -> void override;
+        auto visit(ast::ConditionalExpr& expr) -> void override;
+        auto visit(ast::GetExpr&         expr) -> void override;
+        auto visit(ast::GroupingExpr&    expr) -> void override;
+        auto visit(ast::LogicalExpr&     expr) -> void override;
+        auto visit(ast::NilExpr&         expr) -> void override;
+        auto visit(ast::NumberExpr&      expr) -> void override;
+        auto visit(ast::SetExpr&         expr) -> void override;
+        auto visit(ast::StringExpr&      expr) -> void override;
+        auto visit(ast::SuperExpr&       expr) -> void override;
+        auto visit(ast::ThisExpr&        expr) -> void override;
+        auto visit(ast::UnaryExpr&       expr) -> void override;
+        auto visit(ast::VariableExpr&    expr) -> void override;
 
     private:
         enum class FunType

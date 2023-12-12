@@ -41,21 +41,22 @@ namespace loxe::ast
         struct Visitor
         {
             virtual ~Visitor() = default;
-            virtual auto visit(const_wrapper<IsConst, struct AssignExpr>&)   -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct BinaryExpr>&)   -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct BooleanExpr>&)  -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct CallExpr>&)     -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct GetExpr>&)      -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct GroupingExpr>&) -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct LogicalExpr>&)  -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct NilExpr>&)      -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct NumberExpr>&)   -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct SetExpr>&)      -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct StringExpr>&)   -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct SuperExpr>&)    -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct ThisExpr>&)     -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct UnaryExpr>&)    -> R = 0;
-            virtual auto visit(const_wrapper<IsConst, struct VariableExpr>&) -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct AssignExpr>&)      -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct BinaryExpr>&)      -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct BooleanExpr>&)     -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct CallExpr>&)        -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct ConditionalExpr>&) -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct GetExpr>&)         -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct GroupingExpr>&)    -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct LogicalExpr>&)     -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct NilExpr>&)         -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct NumberExpr>&)      -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct SetExpr>&)         -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct StringExpr>&)      -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct SuperExpr>&)       -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct ThisExpr>&)        -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct UnaryExpr>&)       -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct VariableExpr>&)    -> R = 0;
         };
 
         template<typename R> using visitor       = Visitor<R, not_const>;
@@ -231,6 +232,24 @@ namespace loxe::ast
         Token     paren;
         expr_ptr  callee;
         expr_list args;
+    };
+
+    struct ConditionalExpr final : public ExprCRTP<ConditionalExpr>
+    {
+        ConditionalExpr(expr_ptr condition, expr_ptr then_branch, expr_ptr else_branch)
+            : condition(std::move(condition)), then_branch(std::move(then_branch)), else_branch(std::move(else_branch)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ConditionalExpr> override
+        {
+            auto con = condition   ? condition->clone() : nullptr;
+            auto thn = then_branch ? then_branch->clone() : nullptr;
+            auto els = else_branch ? else_branch->clone() : nullptr;
+            return std::make_unique<ConditionalExpr>(std::move(con), std::move(thn), std::move(els));
+        }
+
+        expr_ptr condition;
+        expr_ptr then_branch;
+        expr_ptr else_branch;
     };
 
     struct GetExpr final : public ExprCRTP<GetExpr>

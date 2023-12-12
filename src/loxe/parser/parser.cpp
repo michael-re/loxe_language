@@ -162,7 +162,21 @@ auto loxe::Parser::parse_while_stmt() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_expression() -> ast::expr_ptr
 {
-    return parse_assignment();
+    return parse_conditional();
+}
+
+auto loxe::Parser::parse_conditional() -> ast::expr_ptr
+{
+    auto expr = parse_assignment();
+    if (match(Token::Type::Question))
+    {
+        auto then_branch = parse_expression();
+        consume(Token::Type::Colon, "expect ':' after then branch of conditional expression");
+        auto else_branch = parse_conditional();
+        return ast::ConditionalExpr::make(std::move(expr), std::move(then_branch), std::move(else_branch));
+    }
+
+    return expr;
 }
 
 auto loxe::Parser::parse_assignment() -> ast::expr_ptr

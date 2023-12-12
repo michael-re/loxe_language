@@ -16,12 +16,14 @@ auto loxe::Token::type_string() const -> std::string
     static constexpr auto token_str = std::array
     {
         // single-character tokens
+        "Type::Colon",
         "Type::Comma",
         "Type::Dot",
         "Type::LeftBrace",
         "Type::LeftParen",
         "Type::Minus",
         "Type::Plus",
+        "Type::Question",
         "Type::RightBrace",
         "Type::RightParen",
         "Type::Semicolon",

@@ -138,12 +138,14 @@ auto loxe::Lexer::lex_punctuation() -> Token
         case '{': return make_token(Token::Type::LeftBrace);
         case '}': return make_token(Token::Type::RightBrace);
         case ';': return make_token(Token::Type::Semicolon);
+        case ':': return make_token(Token::Type::Colon);
         case ',': return make_token(Token::Type::Comma);
         case '.': return make_token(Token::Type::Dot);
         case '-': return make_token(Token::Type::Minus);
         case '+': return make_token(Token::Type::Plus);
         case '/': return make_token(Token::Type::Slash);
         case '*': return make_token(Token::Type::Star);
+        case '?': return make_token(Token::Type::Question);
 
         // single or double character tokens
         case '!': return make_token(is_eq ? Token::Type::BangEqual    : Token::Type::Bang,    length);
