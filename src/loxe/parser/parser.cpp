@@ -289,7 +289,7 @@ auto loxe::Parser::parse_factor() -> ast::expr_ptr
 
 auto loxe::Parser::parse_unary() -> ast::expr_ptr
 {
-    while (match(Token::Type::Bang) || match(Token::Type::Minus))
+    while (match(Token::Type::Bang) || match(Token::Type::Minus) || match(Token::Type::Plus))
     {
         auto op      = previous();
         auto operand = parse_unary();

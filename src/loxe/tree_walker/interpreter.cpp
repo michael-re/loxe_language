@@ -281,6 +281,10 @@ auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> Object
 {
     switch (auto operand = evaluate(expr.operand); expr.op.type)
     {
+        case  Token::Type::Plus:
+            if (!operand.is<Object::number>())
+                throw RuntimeError(expr.op, "'+' unary operator requires a numbers");
+            return { +operand.as<Object::number>() };
         case Token::Type::Minus:
             if (!operand.is<Object::number>())
                 throw RuntimeError(expr.op, "'-' unary operator requires a numbers");
