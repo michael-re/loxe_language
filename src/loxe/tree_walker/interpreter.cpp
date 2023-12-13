@@ -150,7 +150,7 @@ auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
     if (evaluate(stmt.condition).is_truthy())
         execute(stmt.then_branch);
     else if (stmt.else_branch)
-        execute(stmt.then_branch);
+        execute(stmt.else_branch);
 }
 
 auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
@@ -189,10 +189,7 @@ auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> Object
 {
-    if (auto value = evaluate(expr.value); expr.depth)
-        return m_environment->assign_at(*expr.depth, expr.name, evaluate(expr.value));
-    else
-        return m_global->assign(expr.name, evaluate(expr.value));
+    return m_environment->assign_at(*expr.depth, expr.name, evaluate(expr.value));
 }
 
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> Object
