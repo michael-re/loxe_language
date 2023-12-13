@@ -53,6 +53,7 @@ auto loxe::Parser::parse_statement() -> ast::stmt_ptr
     if (match(Token::Type::Print))     return parse_print_stmt();
     if (match(Token::Type::Return))    return parse_return_stmt();
     if (match(Token::Type::While))     return parse_while_stmt();
+    if (match(Token::Type::Break))     return parse_break_stmt();
     return parse_expr_stmt();
 }
 
@@ -64,6 +65,13 @@ auto loxe::Parser::parse_block_stmt() -> ast::stmt_ptr
 
     consume(Token::Type::RightBrace, "expect '}' after block");
     return ast::BlockStmt::make(std::move(statements));
+}
+
+auto loxe::Parser::parse_break_stmt() -> ast::stmt_ptr
+{
+    auto keyword = previous();
+    consume(Token::Type::Semicolon, "expect ';' after 'break'");
+    return ast::BreakStmt::make(std::move(keyword));
 }
 
 auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr

@@ -27,6 +27,7 @@ namespace loxe
 
     private:
         auto visit(const ast::BlockStmt&      stmt) -> void override;
+        auto visit(const ast::BreakStmt&      stmt) -> void override;
         auto visit(const ast::ClassStmt&      stmt) -> void override;
         auto visit(const ast::ExpressionStmt& stmt) -> void override;
         auto visit(const ast::ForStmt&        stmt) -> void override;

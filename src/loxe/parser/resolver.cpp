@@ -3,9 +3,11 @@
 
 auto loxe::Resolver::resolve_ast(const ast::stmt_list& ast) -> Resolver&
 {
+    m_loops    = 0;
     m_error    = false;
     m_scopes   = {};
     m_fun_type = FunType::None;
+    m_cls_type = ClsType::None;
 
     begin_scope();
     resolve(ast);
@@ -40,6 +42,12 @@ auto loxe::Resolver::visit(ast::BlockStmt& stmt) -> void
     begin_scope();
     resolve(stmt.statements);
     end_scope();
+}
+
+auto loxe::Resolver::visit(ast::BreakStmt& stmt) -> void
+{
+    if (!m_loops)
+        error(stmt.keyword, "must be inside loop to use 'break'");
 }
 
 auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
@@ -86,7 +94,10 @@ auto loxe::Resolver::visit(ast::ForStmt& stmt) -> void
     resolve(stmt.initializer);
     resolve(stmt.condition);
     resolve(stmt.update);
+
+    begin_loop();
     resolve(stmt.body);
+    end_loop();
 }
 
 auto loxe::Resolver::visit(ast::FunctionStmt& stmt) -> void
@@ -129,9 +140,10 @@ auto loxe::Resolver::visit(ast::VariableStmt& stmt) -> void
 auto loxe::Resolver::visit(ast::WhileStmt& stmt) -> void
 {
     resolve(stmt.condition);
+    begin_loop();
     resolve(stmt.body);
+    end_loop();
 }
-
 
 auto loxe::Resolver::visit(ast::AssignExpr& expr) -> void
 {
@@ -252,6 +264,16 @@ auto loxe::Resolver::begin_scope() -> void
 auto loxe::Resolver::end_scope() -> void
 {
     m_scopes.pop_back();
+}
+
+auto loxe::Resolver::begin_loop() -> void
+{
+    m_loops++;
+}
+
+auto loxe::Resolver::end_loop() -> void
+{
+    m_loops--;
 }
 
 auto loxe::Resolver::declare(const Token &name) -> void

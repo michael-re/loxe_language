@@ -82,6 +82,7 @@ namespace loxe::ast
         {
             virtual ~Visitor() = default;
             virtual auto visit(const_wrapper<IsConst, struct BlockStmt>&)      -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct BreakStmt>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ClassStmt>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ExpressionStmt>&) -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ForStmt>&)        -> R = 0;
@@ -453,6 +454,19 @@ namespace loxe::ast
         }
 
         stmt_list statements;
+    };
+
+    struct BreakStmt final : public StmtCRTP<BreakStmt>
+    {
+        BreakStmt(Token keyword)
+            : keyword(std::move(keyword)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<BreakStmt> override
+        {
+            return std::make_unique<BreakStmt>(*this);
+        }
+
+        Token keyword;
     };
 
     struct ExpressionStmt final : public StmtCRTP<ExpressionStmt>

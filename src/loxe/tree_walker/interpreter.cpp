@@ -47,6 +47,11 @@ auto loxe::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> voi
         m_environment = std::move(previous);
         throw e;
     }
+    catch (const BreakError& e)
+    {
+        m_environment = std::move(previous);
+        throw e;
+    }
     catch (const RuntimeError& e)
     {
         m_environment = std::move(previous);
@@ -57,6 +62,12 @@ auto loxe::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> voi
 auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
 {
     execute(stmt.statements, std::make_shared<Environment>(m_environment.get()));
+}
+
+auto loxe::Interpreter::visit(const ast::BreakStmt& stmt) -> void
+{
+    utility::ignore(stmt);
+    throw BreakError();
 }
 
 auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
@@ -100,7 +111,16 @@ auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
 auto loxe::Interpreter::visit(const ast::ForStmt& stmt) -> void
 {
     for (execute(stmt.initializer); evaluate(stmt.condition).is_truthy(); evaluate(stmt.update))
-        execute(stmt.body);
+    {
+        try
+        {
+            execute(stmt.body);
+        }
+        catch (const BreakError&)
+        {
+            break;
+        }
+    }
 }
 
 auto loxe::Interpreter::visit(const ast::FunctionStmt& stmt) -> void
@@ -136,7 +156,16 @@ auto loxe::Interpreter::visit(const ast::VariableStmt& stmt) -> void
 auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
 {
     while (evaluate(stmt.condition).is_truthy())
-        execute(stmt.body);
+    {
+        try
+        {
+            execute(stmt.body);
+        }
+        catch (const BreakError&)
+        {
+            break;
+        }
+    }
 }
 
 auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> Object

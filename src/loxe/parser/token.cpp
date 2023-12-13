@@ -47,6 +47,7 @@ auto loxe::Token::type_string() const -> std::string
 
         // keywords
         "Type::And",
+        "Type::Break",
         "Type::Class",
         "Type::Else",
         "Type::False",
@@ -76,6 +77,7 @@ auto loxe::Token::type_string() const -> std::string
 auto loxe::Token::ident_type(std::string_view identifier) -> Type
 {
     if (identifier == "and")    return Type::And;
+    if (identifier == "break")  return Type::Break;
     if (identifier == "class")  return Type::Class;
     if (identifier == "else")   return Type::Else;
     if (identifier == "false")  return Type::False;

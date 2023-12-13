@@ -44,6 +44,7 @@ namespace loxe
 
             // keywords
             And,
+            Break,
             Class,
             Else,
             False,

@@ -27,6 +27,12 @@ namespace loxe
 
         Object value;
     };
+
+    struct BreakError : public Exception
+    {
+        BreakError()
+            : Exception("using exception to break from loop") {}
+    };
 } // namespace loxe
 
 #endif // !LOXE_TREE_WALKER_ERROR_HPP

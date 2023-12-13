@@ -27,6 +27,7 @@ namespace loxe
 
     private:
         auto visit(ast::BlockStmt&      stmt) -> void override;
+        auto visit(ast::BreakStmt&      stmt) -> void override;
         auto visit(ast::ClassStmt&      stmt) -> void override;
         auto visit(ast::ExpressionStmt& stmt) -> void override;
         auto visit(ast::ForStmt&        stmt) -> void override;
@@ -74,6 +75,8 @@ namespace loxe
     private:
         auto begin_scope() -> void;
         auto end_scope()   -> void;
+        auto begin_loop()  -> void;
+        auto end_loop()    -> void;
 
         auto declare(const Token& name) -> void;
         auto define(const Token& name)  -> void;
@@ -84,6 +87,7 @@ namespace loxe
         auto error(const Token& token, std::string message) -> void;
 
     private:
+        int     m_loops    = 0;
         bool    m_error    = false;
         stack   m_scopes   = {};
         FunType m_fun_type = FunType::None;
