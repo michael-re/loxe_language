@@ -33,6 +33,12 @@ namespace loxe
         BreakError()
             : Exception("using exception to break from loop") {}
     };
+
+    struct ContinueError : public Exception
+    {
+        ContinueError()
+            : Exception("using exception to continue in loop") {}
+    };
 } // namespace loxe
 
 #endif // !LOXE_TREE_WALKER_ERROR_HPP

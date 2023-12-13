@@ -84,6 +84,7 @@ namespace loxe::ast
             virtual auto visit(const_wrapper<IsConst, struct BlockStmt>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct BreakStmt>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ClassStmt>&)      -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct ContinueStmt>&)   -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ExpressionStmt>&) -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ForStmt>&)        -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct FunctionStmt>&)   -> R = 0;
@@ -481,6 +482,19 @@ namespace loxe::ast
         }
 
         expr_ptr expression;
+    };
+
+    struct ContinueStmt final : public StmtCRTP<ContinueStmt>
+    {
+        ContinueStmt(Token keyword)
+            : keyword(std::move(keyword)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ContinueStmt> override
+        {
+            return std::make_unique<ContinueStmt>(*this);
+        }
+
+        Token keyword;
     };
 
     struct ForStmt final : public StmtCRTP<ForStmt>

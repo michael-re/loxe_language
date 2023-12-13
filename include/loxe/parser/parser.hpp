@@ -27,19 +27,20 @@ namespace loxe
         [[nodiscard]] auto parse(std::string source) -> std::optional<ast::stmt_list>;
 
     private:
-        [[nodiscard]] auto parse_declaration() -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_statement()   -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_block_stmt()  -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_break_stmt()  -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_class_stmt()  -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_expr_stmt()   -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_for_stmt()    -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_fun_stmt()    -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_if_stmt()     -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_print_stmt()  -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_return_stmt() -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_var_stmt()    -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_while_stmt()  -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_declaration()   -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_statement()     -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_block_stmt()    -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_break_stmt()    -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_class_stmt()    -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_continue_stmt() -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_expr_stmt()     -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_for_stmt()      -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_fun_stmt()      -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_if_stmt()       -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_print_stmt()    -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_return_stmt()   -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_var_stmt()      -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_while_stmt()    -> ast::stmt_ptr;
 
         [[nodiscard]] auto parse_expression()  -> ast::expr_ptr;
         [[nodiscard]] auto parse_comma()       -> ast::expr_ptr;

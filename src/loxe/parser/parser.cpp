@@ -47,13 +47,14 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_statement() -> ast::stmt_ptr
 {
+    if (match(Token::Type::Break))     return parse_break_stmt();
+    if (match(Token::Type::Continue))  return parse_continue_stmt();
     if (match(Token::Type::For))       return parse_for_stmt();
     if (match(Token::Type::If))        return parse_if_stmt();
     if (match(Token::Type::LeftBrace)) return parse_block_stmt();
     if (match(Token::Type::Print))     return parse_print_stmt();
     if (match(Token::Type::Return))    return parse_return_stmt();
     if (match(Token::Type::While))     return parse_while_stmt();
-    if (match(Token::Type::Break))     return parse_break_stmt();
     return parse_expr_stmt();
 }
 
@@ -92,6 +93,13 @@ auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr
 
     consume(Token::Type::RightBrace, "expect '}' after class body");
     return ast::ClassStmt::make(std::move(name), std::move(superclass), std::move(methods));
+}
+
+auto loxe::Parser::parse_continue_stmt() -> ast::stmt_ptr
+{
+    auto keyword = previous();
+    consume(Token::Type::Semicolon, "expect ';' after 'continue'");
+    return ast::ContinueStmt::make(std::move(keyword));
 }
 
 auto loxe::Parser::parse_expr_stmt() -> ast::stmt_ptr

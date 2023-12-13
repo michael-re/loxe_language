@@ -42,12 +42,17 @@ auto loxe::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> voi
 
         m_environment = std::move(previous);
     }
-    catch (ReturnError& e)
+    catch (const BreakError& e)
     {
         m_environment = std::move(previous);
         throw e;
     }
-    catch (const BreakError& e)
+    catch (const ContinueError& e)
+    {
+        m_environment = std::move(previous);
+        throw e;
+    }
+    catch (ReturnError& e)
     {
         m_environment = std::move(previous);
         throw e;
@@ -103,6 +108,12 @@ auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
     m_environment->define(stmt.name, { std::move(class_dec) });
 }
 
+auto loxe::Interpreter::visit(const ast::ContinueStmt& stmt) -> void
+{
+    utility::ignore(stmt);
+    throw ContinueError();
+}
+
 auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
 {
     evaluate(stmt.expression);
@@ -119,6 +130,10 @@ auto loxe::Interpreter::visit(const ast::ForStmt& stmt) -> void
         catch (const BreakError&)
         {
             break;
+        }
+        catch (const ContinueError&)
+        {
+            continue;
         }
     }
 }
@@ -164,6 +179,10 @@ auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
         catch (const BreakError&)
         {
             break;
+        }
+        catch (const ContinueError&)
+        {
+            continue;
         }
     }
 }

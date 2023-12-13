@@ -84,6 +84,12 @@ auto loxe::Resolver::visit(ast::ClassStmt& stmt) -> void
     m_cls_type = enclosing;
 }
 
+auto loxe::Resolver::visit(ast::ContinueStmt& stmt) -> void
+{
+    if (!m_loops)
+        error(stmt.keyword, "must be inside loop to use 'continue'");
+}
+
 auto loxe::Resolver::visit(ast::ExpressionStmt& stmt) -> void
 {
     resolve(stmt.expression);

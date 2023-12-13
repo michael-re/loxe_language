@@ -46,6 +46,7 @@ namespace loxe
             And,
             Break,
             Class,
+            Continue,
             Else,
             False,
             For,
