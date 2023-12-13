@@ -347,6 +347,36 @@ auto loxe::Parser::parse_primary() -> ast::expr_ptr
         return ast::GroupingExpr::make(std::move(expr));
     }
 
+    // error productions
+    if (match(Token::Type::BangEqual) || match(Token::Type::EqualEqual))
+    {
+        auto error_production = error(previous(), "missing left-hand operand");
+        utility::ignore(parse_equality());
+        throw error_production;
+    }
+
+    if (match(Token::Type::BangEqual) || match(Token::Type::EqualEqual))
+    {
+        auto error_production = error(previous(), "missing left-hand operand");
+        utility::ignore(parse_equality());
+        throw error_production;
+    }
+
+    if (match(Token::Type::Greater) || match(Token::Type::GreaterEqual) ||
+        match(Token::Type::Less) || match(Token::Type::LessEqual))
+    {
+        auto error_production = error(previous(), "missing left-hand operand");
+        utility::ignore(parse_comparison());
+        throw error_production;
+    }
+
+    if (match(Token::Type::Slash) || match(Token::Type::Star))
+    {
+        auto error_production = error(previous(), "missing left-hand operand");
+        utility::ignore(parse_factor());
+        throw error_production;
+    }
+
     throw error(current(), "expect expression");
 }
 
