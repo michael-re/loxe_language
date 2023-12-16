@@ -27,7 +27,7 @@ namespace loxe::ast
     using expr_list = std::vector<expr_ptr>;
     using stmt_list = std::vector<stmt_ptr>;
 
-    using fun_ptr     = std::unique_ptr<struct FunctionStmt>;
+    using fun_ptr     = std::unique_ptr<struct FunctionExpr>;
     using param_list  = std::vector<Token>;
     using method_list = std::vector<fun_ptr>;
 } // namespace loxe::ast
@@ -47,6 +47,7 @@ namespace loxe::ast
             virtual auto visit(const_wrapper<IsConst, struct CallExpr>&)        -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct CommaExpr>&)       -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ConditionalExpr>&) -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct FunctionExpr>&)    -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct GetExpr>&)         -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct GroupingExpr>&)    -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct LogicalExpr>&)     -> R = 0;
@@ -270,6 +271,22 @@ namespace loxe::ast
         expr_ptr else_branch;
     };
 
+    struct FunctionExpr final : public ExprCRTP<FunctionExpr>
+    {
+        FunctionExpr(Token name, param_list params, stmt_ptr body)
+            : name(std::move(name)), params(std::move(params)), body(std::move(body)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<FunctionExpr> override
+        {
+            auto bdy = body ? body->clone() : nullptr;
+            return std::make_unique<FunctionExpr>(name, params, std::move(bdy));
+        }
+
+        Token      name;
+        param_list params;
+        stmt_ptr   body;
+    };
+
     struct GetExpr final : public ExprCRTP<GetExpr>
     {
         GetExpr(Token name, expr_ptr object)
@@ -470,6 +487,24 @@ namespace loxe::ast
         Token keyword;
     };
 
+    struct ClassStmt final : public StmtCRTP<ClassStmt>
+    {
+        ClassStmt(Token name, expr_ptr superclass, method_list methods)
+            : name(std::move(name)), superclass(std::move(superclass)), methods(std::move(methods)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ClassStmt> override
+        {
+            auto mthds = method_list();
+            auto super = superclass ? superclass->clone() : nullptr;
+            for (const auto& method : methods) mthds.emplace_back(method->make_clone());
+            return std::make_unique<ClassStmt>(name, std::move(super), std::move(mthds));
+        }
+
+        Token       name;
+        expr_ptr    superclass;
+        method_list methods;
+    };
+
     struct ExpressionStmt final : public StmtCRTP<ExpressionStmt>
     {
         ExpressionStmt(expr_ptr expression)
@@ -519,36 +554,16 @@ namespace loxe::ast
 
     struct FunctionStmt final : public StmtCRTP<FunctionStmt>
     {
-        FunctionStmt(Token name, param_list params, stmt_ptr body)
-            : name(std::move(name)), params(std::move(params)), body(std::move(body)) {}
+        FunctionStmt(fun_ptr function)
+            : function(std::move(function)) {}
 
         [[nodiscard]] auto make_clone() const -> std::unique_ptr<FunctionStmt> override
         {
-            auto bdy = body ? body->clone() : nullptr;
-            return std::make_unique<FunctionStmt>(name, params, std::move(bdy));
+            auto fun = function ? function->make_clone() : nullptr;
+            return std::make_unique<FunctionStmt>(std::move(fun));
         }
 
-        Token      name;
-        param_list params;
-        stmt_ptr   body;
-    };
-
-    struct ClassStmt final : public StmtCRTP<ClassStmt>
-    {
-        ClassStmt(Token name, expr_ptr superclass, method_list methods)
-            : name(std::move(name)), superclass(std::move(superclass)), methods(std::move(methods)) {}
-
-        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ClassStmt> override
-        {
-            auto mthds = method_list();
-            auto super = superclass ? superclass->clone() : nullptr;
-            for (const auto& method : methods) mthds.emplace_back(method->make_clone());
-            return std::make_unique<ClassStmt>(name, std::move(super), std::move(mthds));
-        }
-
-        Token       name;
-        expr_ptr    superclass;
-        method_list methods;
+        fun_ptr function;
     };
 
     struct IfStmt final : public StmtCRTP<IfStmt>

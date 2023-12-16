@@ -89,7 +89,12 @@ auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr
 
     auto methods = ast::method_list();
     while (!check(Token::Type::RightBrace) && !at_end())
-        methods.emplace_back(  function("method"));
+    {
+        auto name   = consume(Token::Type::Identifier, "expect class method name");
+        auto method = function("method");
+        method->name = std::move(name);
+        methods.emplace_back(std::move(method));
+    }
 
     consume(Token::Type::RightBrace, "expect '}' after class body");
     return ast::ClassStmt::make(std::move(name), std::move(superclass), std::move(methods));
@@ -131,7 +136,10 @@ auto loxe::Parser::parse_for_stmt() -> ast::stmt_ptr
 
 auto loxe::Parser::parse_fun_stmt() -> ast::stmt_ptr
 {
-    return function("function");
+    auto name = consume(Token::Type::Identifier, "expect function name");
+    auto fun  = function("function");
+    fun->name = std::move(name);
+    return ast::FunctionStmt::make(std::move(fun));
 }
 
 auto loxe::Parser::parse_if_stmt() -> ast::stmt_ptr
@@ -348,6 +356,14 @@ auto loxe::Parser::parse_primary() -> ast::expr_ptr
     if (match(Token::Type::Identifier)) return ast::VariableExpr::make(previous());
     if (match(Token::Type::This))       return ast::ThisExpr::make(previous());
 
+    if (match(Token::Type::Lambda))
+    {
+        auto name    = previous();
+        auto lambda  = function("lambda");
+        lambda->name = std::move(name);
+        return lambda;
+    }
+
     if (match(Token::Type::Super))
     {
         auto keyword = previous();
@@ -413,7 +429,7 @@ auto loxe::Parser::finish_call(ast::expr_ptr callee) -> ast::expr_ptr
 
 auto loxe::Parser::function(const std::string& kind) -> ast::fun_ptr
 {
-    auto name = consume(Token::Type::Identifier, "expect " + kind + " name");
+    static const auto implicit_name = Token(Token::Type::Implicit, -1, -1, "unnamed function");
     consume(Token::Type::LeftParen, "expect '(' after " + kind + " name");
     auto params = ast::param_list();
 
@@ -427,7 +443,7 @@ auto loxe::Parser::function(const std::string& kind) -> ast::fun_ptr
 
     consume(Token::Type::RightParen, "expect ')' after parameters");
     consume(Token::Type::LeftBrace, "expect '{' before " + kind + " body");
-    return ast::FunctionStmt::make(std::move(name), std::move(params), parse_block_stmt());
+    return ast::FunctionExpr::make(implicit_name, std::move(params), parse_block_stmt());
 }
 
 auto loxe::Parser::check(Token::Type type) const -> bool

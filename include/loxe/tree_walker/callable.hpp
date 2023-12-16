@@ -35,7 +35,7 @@ namespace loxe
     class FunctionObj : public Callable
     {
     public:
-        using dec_ptr  = std::shared_ptr<ast::FunctionStmt>;
+        using dec_ptr  = std::shared_ptr<ast::FunctionExpr>;
         using env_ptr  = std::shared_ptr<Environment>;
         using inst_ptr = std::shared_ptr<InstanceObj>;
 

@@ -108,9 +108,9 @@ auto loxe::Resolver::visit(ast::ForStmt& stmt) -> void
 
 auto loxe::Resolver::visit(ast::FunctionStmt& stmt) -> void
 {
-    declare(stmt.name);
-    define(stmt.name);
-    resolve_function(stmt, FunType::Function);
+    declare(stmt.function->name);
+    define(stmt.function->name);
+    resolve_function(*stmt.function.get(), FunType::Function);
 }
 
 auto loxe::Resolver::visit(ast::IfStmt& stmt) -> void
@@ -186,6 +186,11 @@ auto loxe::Resolver::visit(ast::ConditionalExpr& expr) -> void
     resolve(expr.condition);
     resolve(expr.then_branch);
     resolve(expr.else_branch);
+}
+
+auto loxe::Resolver::visit(ast::FunctionExpr& expr) -> void
+{
+    resolve_function(expr, FunType::Function);
 }
 
 auto loxe::Resolver::visit(ast::GetExpr& expr) -> void
@@ -309,7 +314,7 @@ auto loxe::Resolver::resolve_local(ast::Expr& expr, const Token &name) -> void
     }
 }
 
-auto loxe::Resolver::resolve_function(ast::FunctionStmt& func, FunType type) -> void
+auto loxe::Resolver::resolve_function(ast::FunctionExpr& func, FunType type) -> void
 {
     const auto enclosing = m_fun_type;
     m_fun_type = type;

@@ -141,8 +141,8 @@ auto loxe::Interpreter::visit(const ast::ForStmt& stmt) -> void
 auto loxe::Interpreter::visit(const ast::FunctionStmt& stmt) -> void
 {
     auto closure  = std::make_shared<Environment>(m_environment.get());
-    auto function = std::make_shared<FunctionObj>(stmt.make_clone(), std::move(closure));
-    m_environment->define(stmt.name, { std::move(function) });
+    auto function = std::make_shared<FunctionObj>(stmt.function->make_clone(), std::move(closure));
+    m_environment->define(stmt.function->name, { std::move(function) });
 }
 
 auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
@@ -260,6 +260,13 @@ auto loxe::Interpreter::visit(const ast::ConditionalExpr& expr) -> Object
 {
     auto condition = evaluate(expr.condition);
     return condition.is_truthy() ? evaluate(expr.then_branch) : evaluate(expr.else_branch);
+}
+
+auto loxe::Interpreter::visit(const ast::FunctionExpr& expr) -> Object
+{
+    auto closure  = std::make_shared<Environment>(m_environment.get());
+    auto function = std::make_shared<FunctionObj>(expr.make_clone(), std::move(closure));
+    return { std::move(function) };
 }
 
 auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> Object

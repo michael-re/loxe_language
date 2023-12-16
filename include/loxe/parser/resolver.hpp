@@ -45,6 +45,7 @@ namespace loxe
         auto visit(ast::CallExpr&        expr) -> void override;
         auto visit(ast::CommaExpr&       expr) -> void override;
         auto visit(ast::ConditionalExpr& expr) -> void override;
+        auto visit(ast::FunctionExpr&    expr) -> void override;
         auto visit(ast::GetExpr&         expr) -> void override;
         auto visit(ast::GroupingExpr&    expr) -> void override;
         auto visit(ast::LogicalExpr&     expr) -> void override;
@@ -83,7 +84,7 @@ namespace loxe
         auto define(const Token& name)  -> void;
 
         auto resolve_local(ast::Expr& expr, const Token& name) -> void;
-        auto resolve_function(ast::FunctionStmt&, FunType)     -> void;
+        auto resolve_function(ast::FunctionExpr&, FunType)     -> void;
 
         auto error(const Token& token, std::string message) -> void;
 
