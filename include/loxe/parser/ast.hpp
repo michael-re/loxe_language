@@ -27,6 +27,9 @@ namespace loxe::ast
     using expr_list = std::vector<expr_ptr>;
     using stmt_list = std::vector<stmt_ptr>;
 
+    using op_stmt = std::optional<stmt_ptr>;
+    using op_expr = std::optional<expr_ptr>;
+
     using fun_ptr     = std::unique_ptr<struct FunctionExpr>;
     using param_list  = std::vector<Token>;
     using method_list = std::vector<fun_ptr>;
@@ -41,6 +44,7 @@ namespace loxe::ast
         struct Visitor
         {
             virtual ~Visitor() = default;
+            virtual auto visit(const_wrapper<IsConst, struct ArrayExpr>&)       -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct AssignExpr>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct BinaryExpr>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct BooleanExpr>&)     -> R = 0;
@@ -55,6 +59,7 @@ namespace loxe::ast
             virtual auto visit(const_wrapper<IsConst, struct NumberExpr>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct SetExpr>&)         -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct StringExpr>&)      -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct SubscriptExpr>&)   -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct SuperExpr>&)       -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ThisExpr>&)        -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct UnaryExpr>&)       -> R = 0;
@@ -171,6 +176,24 @@ namespace loxe::ast
 
 namespace loxe::ast
 {
+    struct ArrayExpr final : public ExprCRTP<ArrayExpr>
+    {
+        ArrayExpr(Token name, expr_ptr size, expr_list initializer)
+            : start(std::move(name)), size(std::move(size)), initializer(std::move(initializer)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ArrayExpr> override
+        {
+            auto siz  = size ? size->clone() : nullptr;
+            auto init = expr_list();
+            for (const auto& val : initializer) init.emplace_back(val ? val->clone() : nullptr);
+            return std::make_unique<ArrayExpr>(start, std::move(siz), std::move(init));
+        }
+
+        Token     start;
+        expr_ptr  size;
+        expr_list initializer;
+    };
+
     struct AssignExpr final : public ExprCRTP<AssignExpr>
     {
         AssignExpr(Token name, expr_ptr value)
@@ -398,6 +421,25 @@ namespace loxe::ast
 
         std::string value;
         Token       token;
+    };
+
+    struct SubscriptExpr final : public ExprCRTP<SubscriptExpr>
+    {
+        SubscriptExpr(Token bracket, expr_ptr expression, expr_ptr index, op_expr new_value = std::nullopt)
+            : bracket(bracket), expression(std::move(expression)), index(std::move(index)), new_value(std::move(new_value)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<SubscriptExpr> override
+        {
+            auto expr = expression ? expression->clone() : nullptr;
+            auto idx  = index ? index->clone() : nullptr;
+            auto nvl  = new_value && *new_value ? std::optional{(*new_value)->clone()} : std::nullopt;
+            return std::make_unique<SubscriptExpr>(bracket, std::move(expr), std::move(idx), std::move(nvl));
+        }
+
+        Token    bracket;
+        expr_ptr expression;
+        expr_ptr index;
+        op_expr  new_value;
     };
 
     struct SuperExpr final : public ExprCRTP<SuperExpr>

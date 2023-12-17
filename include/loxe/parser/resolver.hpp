@@ -39,6 +39,7 @@ namespace loxe
         auto visit(ast::VariableStmt&   stmt) -> void override;
         auto visit(ast::WhileStmt&      stmt) -> void override;
 
+        auto visit(ast::ArrayExpr&       expr) -> void override;
         auto visit(ast::AssignExpr&      expr) -> void override;
         auto visit(ast::BinaryExpr&      expr) -> void override;
         auto visit(ast::BooleanExpr&     expr) -> void override;
@@ -53,6 +54,7 @@ namespace loxe
         auto visit(ast::NumberExpr&      expr) -> void override;
         auto visit(ast::SetExpr&         expr) -> void override;
         auto visit(ast::StringExpr&      expr) -> void override;
+        auto visit(ast::SubscriptExpr&   expr) -> void override;
         auto visit(ast::SuperExpr&       expr) -> void override;
         auto visit(ast::ThisExpr&        expr) -> void override;
         auto visit(ast::UnaryExpr&       expr) -> void override;

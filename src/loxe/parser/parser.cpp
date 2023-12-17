@@ -223,6 +223,8 @@ auto loxe::Parser::parse_assignment() -> ast::expr_ptr
         auto value  = parse_assignment();
         if (auto var = dynamic_cast<ast::VariableExpr*>(expr.get()))
             return ast::AssignExpr::make(var->name, std::move(value));
+        else if (auto subscript = dynamic_cast<ast::SubscriptExpr*>(expr.get()))
+            return ast::SubscriptExpr::make(std::move(subscript->bracket), std::move(subscript->expression), std::move(subscript->index), std::move(value));
         else if (auto get = dynamic_cast<ast::GetExpr*>(expr.get()))
             return ast::SetExpr::make(std::move(get->name), std::move(get->object), std::move(value));
 
@@ -337,9 +339,16 @@ auto loxe::Parser::parse_call() -> ast::expr_ptr
             auto name = consume(Token::Type::Identifier, "expect property name after '.'");
             expr = ast::GetExpr::make(std::move(name), std::move(expr));
         }
+        else if (match(Token::Type::LeftBracket))
+        {
+            auto bracket = previous();
+            auto index   = parse_expression();
+            consume(Token::Type::RightBracket, "expect ']' after subscript arg");
+            expr = ast::SubscriptExpr::make(std::move(bracket), std::move(expr), std::move(index));
+        }
         else
         {
-             break;
+            break;
         }
     }
 
@@ -348,36 +357,18 @@ auto loxe::Parser::parse_call() -> ast::expr_ptr
 
 auto loxe::Parser::parse_primary() -> ast::expr_ptr
 {
-    if (match(Token::Type::Nil))        return ast::NilExpr::make(previous());
-    if (match(Token::Type::True))       return ast::BooleanExpr::make(previous());
-    if (match(Token::Type::False))      return ast::BooleanExpr::make(previous());
-    if (match(Token::Type::Number))     return ast::NumberExpr::make(previous());
-    if (match(Token::Type::String))     return ast::StringExpr::make(previous());
-    if (match(Token::Type::Identifier)) return ast::VariableExpr::make(previous());
-    if (match(Token::Type::This))       return ast::ThisExpr::make(previous());
-
-    if (match(Token::Type::Lambda))
-    {
-        auto name    = previous();
-        auto lambda  = function("lambda");
-        lambda->name = std::move(name);
-        return lambda;
-    }
-
-    if (match(Token::Type::Super))
-    {
-        auto keyword = previous();
-        consume(Token::Type::Dot, "expect '.' after 'super'");
-        auto method = consume(Token::Type::Identifier, "expect superclass method name");
-        return ast::SuperExpr::make(std::move(keyword), std::move(method));
-    }
-
-    if (match(Token::Type::LeftParen))
-    {
-        auto expr = parse_expression();
-        consume(Token::Type::RightParen, "expect ')' after grouping expression");
-        return ast::GroupingExpr::make(std::move(expr));
-    }
+    if (match(Token::Type::Nil))         return ast::NilExpr::make(previous());
+    if (match(Token::Type::True))        return ast::BooleanExpr::make(previous());
+    if (match(Token::Type::False))       return ast::BooleanExpr::make(previous());
+    if (match(Token::Type::Number))      return ast::NumberExpr::make(previous());
+    if (match(Token::Type::String))      return ast::StringExpr::make(previous());
+    if (match(Token::Type::Identifier))  return ast::VariableExpr::make(previous());
+    if (match(Token::Type::This))        return ast::ThisExpr::make(previous());
+    if (match(Token::Type::Lambda))      return parse_lambda();
+    if (match(Token::Type::Super))       return parse_super();
+    if (match(Token::Type::LeftBrace))   return parse_array();
+    if (match(Token::Type::LeftBracket)) return parse_array();
+    if (match(Token::Type::LeftParen))   return parse_grouping();
 
     // error productions
     if (match(Token::Type::BangEqual) || match(Token::Type::EqualEqual))
@@ -410,6 +401,65 @@ auto loxe::Parser::parse_primary() -> ast::expr_ptr
     }
 
     throw error(current(), "expect expression");
+}
+
+auto loxe::Parser::parse_lambda() -> ast::expr_ptr
+{
+    auto name    = previous();
+    auto lambda  = function("lambda");
+    lambda->name = std::move(name);
+    return lambda;
+}
+
+auto loxe::Parser::parse_super() -> ast::expr_ptr
+{
+    auto keyword = previous();
+    consume(Token::Type::Dot, "expect '.' after 'super'");
+    auto method = consume(Token::Type::Identifier, "expect superclass method name");
+    return ast::SuperExpr::make(std::move(keyword), std::move(method));
+}
+
+auto loxe::Parser::parse_array() -> ast::expr_ptr
+{
+    auto start       = previous();
+    auto size        = ast::expr_ptr(nullptr);
+    auto initializer = ast::expr_list();
+
+    if (start.type == Token::Type::LeftBracket && match(Token::Type::Colon))
+    {
+        size = parse_expression();
+        consume(Token::Type::RightBracket, "expect ']' after subscript arg");
+        if (match(Token::Type::LeftBrace)) initializer = parse_initializer();
+    }
+    else if (start.type == Token::Type::LeftBrace)
+    {
+        initializer = parse_initializer();
+    }
+
+    return ast::ArrayExpr::make(std::move(start), std::move(size), std::move(initializer));
+}
+
+auto loxe::Parser::parse_grouping() -> ast::expr_ptr
+{
+    auto expr = parse_expression();
+    consume(Token::Type::RightParen, "expect ')' after grouping expression");
+    return ast::GroupingExpr::make(std::move(expr));
+}
+
+auto loxe::Parser::parse_initializer() -> ast::expr_list
+{
+    auto initializer = ast::expr_list();
+    if (!check(Token::Type::RightBrace))
+    {
+        do
+        {
+            if (check(Token::Type::RightBrace)) break;
+            initializer.emplace_back(parse_conditional());
+        } while (match(Token::Type::Comma));
+    }
+
+    consume(Token::Type::RightBrace, "expect '}' after initializer expression");
+    return initializer;
 }
 
 auto loxe::Parser::finish_call(ast::expr_ptr callee) -> ast::expr_ptr

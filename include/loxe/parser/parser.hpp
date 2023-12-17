@@ -56,6 +56,12 @@ namespace loxe
         [[nodiscard]] auto parse_call()        -> ast::expr_ptr;
         [[nodiscard]] auto parse_primary()     -> ast::expr_ptr;
 
+        [[nodiscard]] auto parse_lambda()      -> ast::expr_ptr;
+        [[nodiscard]] auto parse_super()       -> ast::expr_ptr;
+        [[nodiscard]] auto parse_array()       -> ast::expr_ptr;
+        [[nodiscard]] auto parse_grouping()    -> ast::expr_ptr;
+        [[nodiscard]] auto parse_initializer() -> ast::expr_list;
+
         [[nodiscard]] auto finish_call(ast::expr_ptr callee) -> ast::expr_ptr;
         [[nodiscard]] auto function(const std::string& kind) -> ast::fun_ptr;
 

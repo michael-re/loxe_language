@@ -81,7 +81,7 @@ auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
 
     auto super = ClassObj::super_type(nullptr);
     if (stmt.superclass)
-    { 
+    {
         auto superclass  = evaluate(stmt.superclass);
         auto is_callable = superclass.is<Object::callable>();
         auto as_callable = is_callable ? superclass.as<Object::callable>() : nullptr;
@@ -187,6 +187,24 @@ auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
     }
 }
 
+auto loxe::Interpreter::visit(const ast::ArrayExpr& expr) -> Object
+{
+    auto values = Object::Array::container();
+    for (const auto& value : expr.initializer)
+        values.emplace_back(evaluate(value));
+
+    if (auto size = evaluate(expr.size); expr.size)
+    {
+        if (!size.is<Object::number>())
+            throw RuntimeError(expr.start, "array size must be a number during initialization");
+
+        auto as_number = static_cast<std::size_t>(size.as<Object::number>());
+        if (values.size() < as_number) values.resize(as_number, Object());
+    }
+
+    return { std::make_shared<Object::Array>(std::move(values)) };
+}
+
 auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> Object
 {
     return m_environment->assign_at(*expr.depth, expr.name, evaluate(expr.value));
@@ -195,7 +213,8 @@ auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> Object
 auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> Object
 {
     auto number = [&expr](const Object& object) -> Object::number {
-        if (!object.is<Object::number>()) throw RuntimeError(expr.op, "operator requires a number");
+        if (!object.is<Object::number>())
+            throw RuntimeError(expr.op, "operator requires a number");
         return object.as<Object::number>();
     };
 
@@ -304,12 +323,33 @@ auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> Object
 {
     if (auto object = evaluate(expr.object); object.is<Object::instance>())
         return object.as<Object::instance>()->set(expr.name, evaluate(expr.value));
-    throw RuntimeError(expr.name, "only instance have properties");
+    throw RuntimeError(expr.name, "only instances have properties");
 }
 
 auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> Object
 {
     return { expr.value };
+}
+
+auto loxe::Interpreter::visit(const ast::SubscriptExpr& expr) -> Object
+{
+    auto object = evaluate(expr.expression);
+    if (!object.is<Object::array>())
+        throw RuntimeError(expr.bracket, "subscript operator can only be used on arrays");
+
+    auto array = object.as<Object::array>();
+    auto index = evaluate(expr.index);
+    if (!index.is<Object::number>())
+        throw RuntimeError(expr.bracket, "subscript operator requires a number operator");
+
+    auto index_value = index.as<Object::number>();
+    if (static_cast<std::size_t>(index_value) > array->length() || index_value < 0)
+        throw RuntimeError(expr.bracket, "index out of range for array");
+
+    if (expr.new_value)
+        return array->assign_at(index_value, evaluate(*expr.new_value));
+
+    return array->access_at(index_value);
 }
 
 auto loxe::Interpreter::visit(const ast::SuperExpr& expr) -> Object

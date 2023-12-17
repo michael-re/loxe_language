@@ -3,8 +3,9 @@
 #ifndef LOXE_TREE_WALKER_OBJECT_HPP
 #define LOXE_TREE_WALKER_OBJECT_HPP
 
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 #include <variant>
 
 namespace loxe
@@ -12,13 +13,33 @@ namespace loxe
     class Object
     {
     public:
+        class Array
+        {
+        public:
+            using container = std::vector<Object>;
+
+        public:
+            Array(container values = {})
+                : m_values(std::move(values)) {}
+
+            auto length() const                        -> std::size_t;
+            auto to_string() const                     -> std::string;
+            auto access_at(double index) const         -> const Object&;
+            auto assign_at(double index, Object value) -> Object&;
+
+        private:
+            container m_values;
+        };
+
+    public:
         using nil        = std::monostate;
         using boolean    = bool;
         using number     = double;
         using string     = std::string;
         using callable   = std::shared_ptr<class Callable>;
         using instance   = std::shared_ptr<class InstanceObj>;
-        using value_type = std::variant<nil, boolean, number, string, callable, instance>;
+        using array      = std::shared_ptr<Array>;
+        using value_type = std::variant<nil, boolean, number, string, callable, instance, array>;
 
     public:
         Object()               : m_value(nil())            {}
@@ -27,6 +48,7 @@ namespace loxe
         Object(string   value) : m_value(std::move(value)) {}
         Object(callable value) : m_value(std::move(value)) {}
         Object(instance value) : m_value(std::move(value)) {}
+        Object(array    value) : m_value(std::move(value)) {}
 
         template<typename T>
         [[nodiscard]] constexpr auto is() const -> bool

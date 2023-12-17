@@ -151,6 +151,13 @@ auto loxe::Resolver::visit(ast::WhileStmt& stmt) -> void
     end_loop();
 }
 
+auto loxe::Resolver::visit(ast::ArrayExpr& expr) -> void
+{
+    resolve(expr.size);
+    for (const auto& value : expr.initializer)
+        resolve(value);
+}
+
 auto loxe::Resolver::visit(ast::AssignExpr& expr) -> void
 {
     resolve(expr.value);
@@ -228,6 +235,13 @@ auto loxe::Resolver::visit(ast::SetExpr& expr) -> void
 auto loxe::Resolver::visit(ast::StringExpr& expr) -> void
 {
     utility::ignore(expr);
+}
+
+auto loxe::Resolver::visit(ast::SubscriptExpr& expr) -> void
+{
+    resolve(expr.expression);
+    resolve(expr.index);
+    if (expr.new_value) resolve(*expr.new_value);
 }
 
 auto loxe::Resolver::visit(ast::SuperExpr& expr) -> void
