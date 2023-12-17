@@ -91,9 +91,9 @@ auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr
     auto methods = ast::method_list();
     while (!check(Token::Type::RightBrace) && !at_end())
     {
-        auto name   = consume(Token::Type::Identifier, "expect class method name");
-        auto method = function("method");
-        method->name = std::move(name);
+        auto method_name = consume(Token::Type::Identifier, "expect class method name");
+        auto method      = function("method");
+        method->name = std::move(method_name);
         methods.emplace_back(std::move(method));
     }
 
