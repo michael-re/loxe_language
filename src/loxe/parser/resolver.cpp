@@ -120,6 +120,18 @@ auto loxe::Resolver::visit(ast::IfStmt& stmt) -> void
     resolve(stmt.else_branch);
 }
 
+auto loxe::Resolver::visit(ast::LetStmt& stmt) -> void
+{
+    declare(stmt.name);
+
+    if (stmt.initializer)
+        resolve(stmt.initializer);
+    else
+        error(stmt.name, "let statement must be initalized to a value");
+
+    define(stmt.name);
+}
+
 auto loxe::Resolver::visit(ast::PrintStmt& stmt) -> void
 {
     resolve(stmt.expression);
@@ -138,7 +150,7 @@ auto loxe::Resolver::visit(ast::ReturnStmt& stmt) -> void
 
 auto loxe::Resolver::visit(ast::VariableStmt& stmt) -> void
 {
-    declare(stmt.name);
+    declare(stmt.name, true);
     if (stmt.initializer) resolve(stmt.initializer);
     define(stmt.name);
 }
@@ -160,8 +172,12 @@ auto loxe::Resolver::visit(ast::ArrayExpr& expr) -> void
 
 auto loxe::Resolver::visit(ast::AssignExpr& expr) -> void
 {
+    const auto assign = m_assign;
+
     resolve(expr.value);
+    m_assign = true;
     resolve_local(expr, expr.name);
+    m_assign = assign;
 }
 
 auto loxe::Resolver::visit(ast::BinaryExpr& expr) -> void
@@ -273,7 +289,7 @@ auto loxe::Resolver::visit(ast::VariableExpr& expr) -> void
 {
     if (!m_scopes.empty() &&
          m_scopes.back().contains(expr.name.lexeme) &&
-         m_scopes.back()[expr.name.lexeme] == false)
+         m_scopes.back()[expr.name.lexeme].defined == false)
     {
         error(expr.name, "can't read local variable in its own initializer");
     }
@@ -301,19 +317,19 @@ auto loxe::Resolver::end_loop() -> void
     m_loops--;
 }
 
-auto loxe::Resolver::declare(const Token &name) -> void
+auto loxe::Resolver::declare(const Token &name, bool assignable) -> void
 {
     if (m_scopes.empty()) return;
     if (m_scopes.back().contains(name.lexeme))
         error(name, "symbol already defined with this name in this scope");
 
-    m_scopes.back()[name.lexeme] = false;
+    m_scopes.back()[name.lexeme] = { false, assignable };
 }
 
 auto loxe::Resolver::define(const Token &name) -> void
 {
     if (m_scopes.empty()) return;
-    m_scopes.back()[name.lexeme] = true;
+    m_scopes.back()[name.lexeme].defined = true;
 }
 
 auto loxe::Resolver::resolve_local(ast::Expr& expr, const Token &name) -> void
@@ -322,6 +338,8 @@ auto loxe::Resolver::resolve_local(ast::Expr& expr, const Token &name) -> void
     {
         if (m_scopes[m_scopes.size() - 1 - i].contains(name.lexeme))
         {
+            if (m_assign && !m_scopes[m_scopes.size() - 1 - i][name.lexeme].assignable)
+                error(name, "can't reassign this symbol in the current scope");
             expr.depth = i;
             break;
         }
@@ -336,7 +354,7 @@ auto loxe::Resolver::resolve_function(ast::FunctionExpr& func, FunType type) -> 
     begin_scope();
     for (const auto& param : func.params)
     {
-        declare(param);
+        declare(param, true);
         define(param);
     }
 

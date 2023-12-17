@@ -95,6 +95,7 @@ namespace loxe::ast
             virtual auto visit(const_wrapper<IsConst, struct ForStmt>&)        -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct FunctionStmt>&)   -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct IfStmt>&)         -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct LetStmt>&)        -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct PrintStmt>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ReturnStmt>&)     -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct VariableStmt>&)   -> R = 0;
@@ -624,6 +625,21 @@ namespace loxe::ast
         expr_ptr condition;
         stmt_ptr then_branch;
         stmt_ptr else_branch;
+    };
+
+    struct LetStmt final : public StmtCRTP<LetStmt>
+    {
+        LetStmt(Token name, expr_ptr initializer)
+            : name(std::move(name)), initializer(std::move(initializer)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<LetStmt> override
+        {
+            auto init = initializer ? initializer->clone() : nullptr;
+            return std::make_unique<LetStmt>(name, std::move(init));
+        }
+
+        Token    name;
+        expr_ptr initializer;
     };
 
     struct PrintStmt final : public StmtCRTP<PrintStmt>

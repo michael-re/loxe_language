@@ -55,6 +55,7 @@ namespace loxe
             Fun,
             If,
             Lambda,
+            Let,
             Nil,
             Or,
             Print,

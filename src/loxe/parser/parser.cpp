@@ -35,6 +35,7 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
         if (match(Token::Type::Class)) return parse_class_stmt();
         if (match(Token::Type::Fun))   return parse_fun_stmt();
         if (match(Token::Type::Var))   return parse_var_stmt();
+        if (match(Token::Type::Let))   return parse_let_stmt();
         return parse_statement();
     }
     catch (const ParseError& e)
@@ -150,6 +151,15 @@ auto loxe::Parser::parse_if_stmt() -> ast::stmt_ptr
     auto then_branch = parse_statement();
     auto else_branch = match(Token::Type::Else) ? parse_statement() : nullptr;
     return ast::IfStmt::make(std::move(condition), std::move(then_branch), std::move(else_branch));
+}
+
+auto loxe::Parser::parse_let_stmt() -> ast::stmt_ptr
+{
+    auto name        = consume(Token::Type::Identifier, "expect variable name after 'let'");
+    consume(Token::Type::Equal, "expect '=' after 'let' variable declaration");
+    auto initializer = parse_expression();
+    consume(Token::Type::Semicolon, "expect ';' after `let` initializer");
+    return ast::LetStmt::make(std::move(name), std::move(initializer));
 }
 
 auto loxe::Parser::parse_print_stmt() -> ast::stmt_ptr

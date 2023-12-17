@@ -153,6 +153,11 @@ auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
         execute(stmt.else_branch);
 }
 
+auto loxe::Interpreter::visit(const ast::LetStmt& stmt) -> void
+{
+    m_environment->define(stmt.name, evaluate(stmt.initializer));
+}
+
 auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
 {
     utility::println("{}", evaluate(stmt.expression).stringify());

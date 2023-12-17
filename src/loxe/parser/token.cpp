@@ -57,6 +57,7 @@ auto loxe::Token::type_string() const -> std::string
         "Type::Fun",
         "Type::If",
         "Type::Lambda",
+        "Type::Let",
         "Type::Nil",
         "Type::Or",
         "Type::Print",
@@ -89,6 +90,7 @@ auto loxe::Token::ident_type(std::string_view identifier) -> Type
     if (identifier == "fun")      return Type::Fun;
     if (identifier == "if")       return Type::If;
     if (identifier == "lambda")   return Type::Lambda;
+    if (identifier == "let")      return Type::Let;
     if (identifier == "nil")      return Type::Nil;
     if (identifier == "or")       return Type::Or;
     if (identifier == "print")    return Type::Print;

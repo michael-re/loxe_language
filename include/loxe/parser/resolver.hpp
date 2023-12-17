@@ -13,7 +13,16 @@ namespace loxe
     class Resolver : public ast::Stmt::visitor<void>, public ast::Expr::visitor<void>
     {
     public:
-        using map   = std::unordered_map<std::string, bool>;
+        struct Attribute
+        {
+            Attribute(bool defined = false, bool assignable = false)
+                : defined(defined), assignable(assignable) {}
+
+            bool defined    = false;
+            bool assignable = false;
+        };
+
+        using map   = std::unordered_map<std::string, Attribute>;
         using stack = std::vector<map>;
 
     public:
@@ -34,6 +43,7 @@ namespace loxe
         auto visit(ast::ForStmt&        stmt) -> void override;
         auto visit(ast::FunctionStmt&   stmt) -> void override;
         auto visit(ast::IfStmt&         stmt) -> void override;
+        auto visit(ast::LetStmt&        stmt) -> void override;
         auto visit(ast::PrintStmt&      stmt) -> void override;
         auto visit(ast::ReturnStmt&     stmt) -> void override;
         auto visit(ast::VariableStmt&   stmt) -> void override;
@@ -82,8 +92,8 @@ namespace loxe
         auto begin_loop()  -> void;
         auto end_loop()    -> void;
 
-        auto declare(const Token& name) -> void;
-        auto define(const Token& name)  -> void;
+        auto declare(const Token& name, bool assignable = false) -> void;
+        auto define(const Token& name)                           -> void;
 
         auto resolve_local(ast::Expr& expr, const Token& name) -> void;
         auto resolve_function(ast::FunctionExpr&, FunType)     -> void;
@@ -93,6 +103,7 @@ namespace loxe
     private:
         int     m_loops    = 0;
         bool    m_error    = false;
+        bool    m_assign   = false;
         stack   m_scopes   = {};
         FunType m_fun_type = FunType::None;
         ClsType m_cls_type = ClsType::None;
