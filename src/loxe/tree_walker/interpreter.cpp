@@ -297,6 +297,8 @@ auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> Object
 {
     if (auto value = evaluate(expr.object); value.is<Object::instance>())
         return value.as<Object::instance>()->get(expr.name);
+    else if (value.is<Object::array>() && expr.name.lexeme == "length")
+        return static_cast<Object::number>(value.as<Object::array>()->length());
     throw RuntimeError(expr.name, "only instance have properties");
 }
 
