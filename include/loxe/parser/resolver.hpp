@@ -22,12 +22,17 @@ namespace loxe
             bool assignable = false;
         };
 
+        enum class State
+        {
+            Ok,
+            Error,
+        };
+
         using map   = std::unordered_map<std::string, Attribute>;
         using stack = std::vector<map>;
 
     public:
-        auto resolve_ast(const ast::stmt_list& ast) -> Resolver&;
-        auto had_error() const -> bool;
+        auto resolve_ast(const ast::stmt_list& ast) -> State;
 
     private:
         auto resolve(const ast::stmt_list& stmts) -> void;
@@ -43,7 +48,9 @@ namespace loxe
         auto visit(ast::ForStmt&        stmt) -> void override;
         auto visit(ast::FunctionStmt&   stmt) -> void override;
         auto visit(ast::IfStmt&         stmt) -> void override;
+        auto visit(ast::ImportStmt&     stmt) -> void override;
         auto visit(ast::LetStmt&        stmt) -> void override;
+        auto visit(ast::ModuleStmt&     stmt) -> void override;
         auto visit(ast::PrintStmt&      stmt) -> void override;
         auto visit(ast::ReturnStmt&     stmt) -> void override;
         auto visit(ast::VariableStmt&   stmt) -> void override;
@@ -102,9 +109,9 @@ namespace loxe
 
     private:
         int     m_loops    = 0;
-        bool    m_error    = false;
         bool    m_assign   = false;
         stack   m_scopes   = {};
+        State   m_state    = State::Ok;
         FunType m_fun_type = FunType::None;
         ClsType m_cls_type = ClsType::None;
     };

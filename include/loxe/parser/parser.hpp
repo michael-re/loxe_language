@@ -4,6 +4,7 @@
 #define LOXE_PARSER_PARSER_HPP
 
 #include <optional>
+#include <unordered_set>
 
 #include "loxe/common/except.hpp"
 
@@ -18,29 +19,33 @@ namespace loxe
     public:
         struct ParseError : public Exception
         {
-            ParseError(Token token, std::string message);
+            ParseError(Token token, std::string message, std::string filename);
 
             const Token token;
         };
 
     public:
-        [[nodiscard]] auto parse(std::string source) -> std::optional<ast::stmt_list>;
+        [[nodiscard]] static auto parse(std::string source, std::string filename = {}) -> std::optional<ast::stmt_list>;
 
     private:
-        [[nodiscard]] auto parse_declaration()   -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_dec_or_stmt() -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_declaration() -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_class_dec()   -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_fun_dec()     -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_import_dec()  -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_let_dec()     -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_module_dec()  -> ast::stmt_ptr;
+        [[nodiscard]] auto parse_var_dec()     -> ast::stmt_ptr;
+
         [[nodiscard]] auto parse_statement()     -> ast::stmt_ptr;
         [[nodiscard]] auto parse_block_stmt()    -> ast::stmt_ptr;
         [[nodiscard]] auto parse_break_stmt()    -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_class_stmt()    -> ast::stmt_ptr;
         [[nodiscard]] auto parse_continue_stmt() -> ast::stmt_ptr;
         [[nodiscard]] auto parse_expr_stmt()     -> ast::stmt_ptr;
         [[nodiscard]] auto parse_for_stmt()      -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_fun_stmt()      -> ast::stmt_ptr;
         [[nodiscard]] auto parse_if_stmt()       -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_let_stmt()      -> ast::stmt_ptr;
         [[nodiscard]] auto parse_print_stmt()    -> ast::stmt_ptr;
         [[nodiscard]] auto parse_return_stmt()   -> ast::stmt_ptr;
-        [[nodiscard]] auto parse_var_stmt()      -> ast::stmt_ptr;
         [[nodiscard]] auto parse_while_stmt()    -> ast::stmt_ptr;
 
         [[nodiscard]] auto parse_expression()  -> ast::expr_ptr;
@@ -79,9 +84,13 @@ namespace loxe
         auto error(Token token, std::string msg)        -> ParseError;
         auto synchronize()                              -> void;
 
+        using files = std::unordered_set<std::string>;
+
     private:
-        bool  m_error = false;
-        Lexer m_lexer = {};
+        bool  m_error          = false;
+        Lexer m_lexer          = {};
+        files m_import_files   = {};
+        std::string m_filename = {}; 
     };
 } // namespace loxe
 

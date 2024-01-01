@@ -5,25 +5,9 @@
 
 #include <string>
 
-#include "loxe/parser/parser.hpp"
-#include "loxe/parser/resolver.hpp"
-
-#include "interpreter.hpp"
-
-namespace loxe
+namespace loxe::tree_walker
 {
-    class TreeWalker
-    {
-    public:
-        auto run     (std::string      source)   -> void;
-        auto run_repl(std::string_view prompt)   -> void;
-        auto run_file(std::string_view filename) -> void;
-
-    private:
-        Parser      m_parser;
-        Resolver    m_resolver;
-        Interpreter m_interpreter;
-    };
+    auto run_file(std::string_view filename) -> void;
 } // namespace loxe
 
 #endif // !LOXE_TREE_WALKER_TREE_WALKER_HPP

@@ -1,11 +1,11 @@
 #include "loxe/common/utility.hpp"
 #include "loxe/parser/resolver.hpp"
 
-auto loxe::Resolver::resolve_ast(const ast::stmt_list& ast) -> Resolver&
+auto loxe::Resolver::resolve_ast(const ast::stmt_list& ast) -> State
 {
     m_loops    = 0;
-    m_error    = false;
     m_scopes   = {};
+    m_state    = State::Ok;
     m_fun_type = FunType::None;
     m_cls_type = ClsType::None;
 
@@ -13,12 +13,7 @@ auto loxe::Resolver::resolve_ast(const ast::stmt_list& ast) -> Resolver&
     resolve(ast);
     end_scope();
 
-    return *this;
-}
-
-auto loxe::Resolver::had_error() const -> bool
-{
-    return m_error;
+    return m_state;
 }
 
 auto loxe::Resolver::resolve(const ast::stmt_list& stmts) -> void
@@ -120,6 +115,11 @@ auto loxe::Resolver::visit(ast::IfStmt& stmt) -> void
     resolve(stmt.else_branch);
 }
 
+auto loxe::Resolver::visit(ast::ImportStmt& stmt) -> void
+{
+    resolve(stmt.declerations);
+}
+
 auto loxe::Resolver::visit(ast::LetStmt& stmt) -> void
 {
     declare(stmt.name);
@@ -129,6 +129,13 @@ auto loxe::Resolver::visit(ast::LetStmt& stmt) -> void
     else
         error(stmt.name, "let statement must be initalized to a value");
 
+    define(stmt.name);
+}
+
+auto loxe::Resolver::visit(ast::ModuleStmt& stmt) -> void
+{
+    declare(stmt.name);
+    resolve(stmt.declerations);
     define(stmt.name);
 }
 
@@ -368,5 +375,5 @@ auto loxe::Resolver::error(const Token& token, std::string message) -> void
 {
     static constexpr auto format = "[{}, {}] error resolving token '{}': {}.";
     utility::println(std::cerr, format, token.line, token.column, token.lexeme, std::move(message));
-    m_error = true;
+    m_state = State::Error;
 }

@@ -1,41 +1,48 @@
+#include <fstream>
+
 #include "loxe/common/utility.hpp"
 #include "loxe/parser/parser.hpp"
 
-loxe::Parser::ParseError::ParseError(Token token, std::string message)
+loxe::Parser::ParseError::ParseError(Token token, std::string message, std::string filename = {})
     : token(std::move(token))
 {
-    static constexpr auto format_1 = "[{}, {}] ParseError: {} at end.";
-    static constexpr auto format_2 = "[{}, {}] ParseError: {} at '{}'.";
+    static constexpr auto format_1 = "Error in {}:\n[{}, {}] ParseError: {} at end.\n";
+    static constexpr auto format_2 = "Error in {}:\n[{}, {}] ParseError: {} at '{}'.\n";
 
     if (this->token.type == Token::Type::EndOfFile)
-        m_message = utility::as_string(format_1, this->token.line, this->token.column, std::move(message));
+        m_message = utility::as_string(format_1, filename, this->token.line, this->token.column, std::move(message));
     else
-        m_message = utility::as_string(format_2, this->token.line, this->token.column, std::move(message), this->token.lexeme);
+        m_message = utility::as_string(format_2, filename, this->token.line, this->token.column, std::move(message), this->token.lexeme);
 }
 
-auto loxe::Parser::parse(std::string source) -> std::optional<ast::stmt_list>
+auto loxe::Parser::parse(std::string source, std::string filename) -> std::optional<ast::stmt_list>
 {
-    m_error = false;
-    m_lexer = Lexer(std::move(source)).lex();
+    auto parser           = Parser();
+    parser.m_error        = false;
+    parser.m_lexer        = Lexer(std::move(source)).lex();
+    parser.m_filename     = std::move(filename);
+    parser.m_import_files = { parser.m_filename };
 
     auto ast = ast::stmt_list();
-    while (!at_end())
+    while (!parser.at_end())
     {
-        if (match(Token::Type::Semicolon)) continue;
-        ast.emplace_back(parse_declaration());
+        if (parser.match(Token::Type::Semicolon)) continue;
+        ast.emplace_back(parser.parse_dec_or_stmt());
     }
 
-    return m_error ? std::nullopt : std::optional(std::move(ast));
+    return parser.m_error ? std::nullopt : std::optional(std::move(ast));
 }
 
-auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
+auto loxe::Parser::parse_dec_or_stmt() -> ast::stmt_ptr
 {
     try
     {
-        if (match(Token::Type::Class)) return parse_class_stmt();
-        if (match(Token::Type::Fun))   return parse_fun_stmt();
-        if (match(Token::Type::Var))   return parse_var_stmt();
-        if (match(Token::Type::Let))   return parse_let_stmt();
+        if (match(Token::Type::Class))  return parse_class_dec();
+        if (match(Token::Type::Fun))    return parse_fun_dec();
+        if (match(Token::Type::Import)) return parse_import_dec();
+        if (match(Token::Type::Module)) return parse_module_dec();
+        if (match(Token::Type::Let))    return parse_let_dec();
+        if (match(Token::Type::Var))    return parse_var_dec();
         return parse_statement();
     }
     catch (const ParseError& e)
@@ -46,37 +53,27 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
     }
 }
 
-auto loxe::Parser::parse_statement() -> ast::stmt_ptr
+auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
 {
-    if (match(Token::Type::Break))     return parse_break_stmt();
-    if (match(Token::Type::Continue))  return parse_continue_stmt();
-    if (match(Token::Type::For))       return parse_for_stmt();
-    if (match(Token::Type::If))        return parse_if_stmt();
-    if (match(Token::Type::LeftBrace)) return parse_block_stmt();
-    if (match(Token::Type::Print))     return parse_print_stmt();
-    if (match(Token::Type::Return))    return parse_return_stmt();
-    if (match(Token::Type::While))     return parse_while_stmt();
-    return parse_expr_stmt();
+    try
+    {
+        if (match(Token::Type::Class))  return parse_class_dec();
+        if (match(Token::Type::Fun))    return parse_fun_dec();
+        if (match(Token::Type::Import)) return parse_import_dec();
+        if (match(Token::Type::Module)) return parse_module_dec();
+        if (match(Token::Type::Let))    return parse_let_dec();
+        if (match(Token::Type::Var))    return parse_var_dec();
+        throw error(current(), "expect decleration");
+    }
+    catch (const ParseError& e)
+    {
+        utility::println(std::cerr, "{}", e.what());
+        synchronize();
+        return {};
+    }
 }
 
-auto loxe::Parser::parse_block_stmt() -> ast::stmt_ptr
-{
-    auto statements = ast::stmt_list();
-    while (!at_end() && !check(Token::Type::RightBrace))
-        statements.emplace_back(parse_declaration());
-
-    consume(Token::Type::RightBrace, "expect '}' after block");
-    return ast::BlockStmt::make(std::move(statements));
-}
-
-auto loxe::Parser::parse_break_stmt() -> ast::stmt_ptr
-{
-    auto keyword = previous();
-    consume(Token::Type::Semicolon, "expect ';' after 'break'");
-    return ast::BreakStmt::make(std::move(keyword));
-}
-
-auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr
+auto loxe::Parser::parse_class_dec() -> ast::stmt_ptr
 {
     auto name       = consume(Token::Type::Identifier, "expect class name");
     auto superclass = ast::expr_ptr(nullptr);
@@ -101,6 +98,107 @@ auto loxe::Parser::parse_class_stmt() -> ast::stmt_ptr
     return ast::ClassStmt::make(std::move(name), std::move(superclass), std::move(methods));
 }
 
+auto loxe::Parser::parse_fun_dec() -> ast::stmt_ptr
+{
+    auto name = consume(Token::Type::Identifier, "expect function name");
+    auto fun  = function("function");
+    fun->name = std::move(name);
+    return ast::FunctionStmt::make(std::move(fun));
+}
+
+auto loxe::Parser::parse_import_dec() -> ast::stmt_ptr
+{
+    auto keyword = previous();
+    auto path    = consume(Token::Type::String, "expect filepath after 'import'");
+    consume(Token::Type::Semicolon, "expect ';' after filepath");
+
+    if (m_import_files.contains(path.lexeme))
+        return ast::ImportStmt::make(std::move(path), ast::stmt_list());
+
+    m_import_files.insert(path.lexeme);
+
+    const auto loxe_file = std::ifstream(path.lexeme);
+    if (!loxe_file.is_open())
+        throw error(keyword, "failed to import file '" + path.lexeme + "'");
+
+    auto file_parser           = Parser();
+    file_parser.m_lexer        = Lexer(utility::as_string(loxe_file.rdbuf())).lex();
+    file_parser.m_import_files = m_import_files;
+    file_parser.m_filename     = path.lexeme;
+
+    auto declerations = ast::stmt_list();
+    while (!file_parser.at_end())
+    {
+        if (match(Token::Type::Semicolon)) continue;
+        declerations.emplace_back(file_parser.parse_declaration());
+    }
+
+    if (file_parser.m_error)
+        throw error(keyword, "encountered error while parsing file '" + path.lexeme + "'");
+
+    return ast::ImportStmt::make(std::move(path), std::move(declerations));
+}
+
+auto loxe::Parser::parse_let_dec() -> ast::stmt_ptr
+{
+    auto name        = consume(Token::Type::Identifier, "expect variable name after 'let'");
+    consume(Token::Type::Equal, "expect '=' after 'let' variable declaration");
+    auto initializer = parse_expression();
+    consume(Token::Type::Semicolon, "expect ';' after `let` initializer");
+    return ast::LetStmt::make(std::move(name), std::move(initializer));
+}
+
+auto loxe::Parser::parse_module_dec() -> ast::stmt_ptr
+{
+    auto name = consume(Token::Type::Identifier, "expect module name");
+    consume(Token::Type::LeftBrace, "expect '{' before module body");
+
+    auto declerations = ast::stmt_list();
+    while (!check(Token::Type::RightBrace) && !at_end())
+        declerations.emplace_back(parse_declaration());
+
+    consume(Token::Type::RightBrace, "expect '}' after module body");
+    return ast::ModuleStmt::make(std::move(name), std::move(declerations));
+}
+
+auto loxe::Parser::parse_var_dec()  -> ast::stmt_ptr
+{
+    auto name        = consume(Token::Type::Identifier, "expect variable name");
+    auto initializer = match(Token::Type::Equal) ? parse_expression() : nullptr;
+    consume(Token::Type::Semicolon, "expect ';' after variable declaration");
+    return ast::VariableStmt::make(std::move(name), std::move(initializer));
+}
+
+auto loxe::Parser::parse_statement() -> ast::stmt_ptr
+{
+    if (match(Token::Type::Break))     return parse_break_stmt();
+    if (match(Token::Type::Continue))  return parse_continue_stmt();
+    if (match(Token::Type::For))       return parse_for_stmt();
+    if (match(Token::Type::If))        return parse_if_stmt();
+    if (match(Token::Type::LeftBrace)) return parse_block_stmt();
+    if (match(Token::Type::Print))     return parse_print_stmt();
+    if (match(Token::Type::Return))    return parse_return_stmt();
+    if (match(Token::Type::While))     return parse_while_stmt();
+    return parse_expr_stmt();
+}
+
+auto loxe::Parser::parse_block_stmt() -> ast::stmt_ptr
+{
+    auto statements = ast::stmt_list();
+    while (!at_end() && !check(Token::Type::RightBrace))
+        statements.emplace_back(parse_dec_or_stmt());
+
+    consume(Token::Type::RightBrace, "expect '}' after block");
+    return ast::BlockStmt::make(std::move(statements));
+}
+
+auto loxe::Parser::parse_break_stmt() -> ast::stmt_ptr
+{
+    auto keyword = previous();
+    consume(Token::Type::Semicolon, "expect ';' after 'break'");
+    return ast::BreakStmt::make(std::move(keyword));
+}
+
 auto loxe::Parser::parse_continue_stmt() -> ast::stmt_ptr
 {
     auto keyword = previous();
@@ -119,7 +217,7 @@ auto loxe::Parser::parse_for_stmt() -> ast::stmt_ptr
 {
     consume(Token::Type::LeftParen, "expect '(' after 'for'");
     auto initializer = match(Token::Type::Semicolon) ? nullptr          :
-                       match(Token::Type::Var)       ? parse_var_stmt() :
+                       match(Token::Type::Var)       ? parse_var_dec()  :
                                                        parse_expr_stmt();
 
     auto condition = !check(Token::Type::Semicolon) ? parse_expression() : ast::BooleanExpr::make(true);
@@ -135,14 +233,6 @@ auto loxe::Parser::parse_for_stmt() -> ast::stmt_ptr
     return ast::BlockStmt::make(std::move(block));
 }
 
-auto loxe::Parser::parse_fun_stmt() -> ast::stmt_ptr
-{
-    auto name = consume(Token::Type::Identifier, "expect function name");
-    auto fun  = function("function");
-    fun->name = std::move(name);
-    return ast::FunctionStmt::make(std::move(fun));
-}
-
 auto loxe::Parser::parse_if_stmt() -> ast::stmt_ptr
 {
     consume(Token::Type::LeftParen, "expect '(' after 'if'");
@@ -151,15 +241,6 @@ auto loxe::Parser::parse_if_stmt() -> ast::stmt_ptr
     auto then_branch = parse_statement();
     auto else_branch = match(Token::Type::Else) ? parse_statement() : nullptr;
     return ast::IfStmt::make(std::move(condition), std::move(then_branch), std::move(else_branch));
-}
-
-auto loxe::Parser::parse_let_stmt() -> ast::stmt_ptr
-{
-    auto name        = consume(Token::Type::Identifier, "expect variable name after 'let'");
-    consume(Token::Type::Equal, "expect '=' after 'let' variable declaration");
-    auto initializer = parse_expression();
-    consume(Token::Type::Semicolon, "expect ';' after `let` initializer");
-    return ast::LetStmt::make(std::move(name), std::move(initializer));
 }
 
 auto loxe::Parser::parse_print_stmt() -> ast::stmt_ptr
@@ -175,14 +256,6 @@ auto loxe::Parser::parse_return_stmt() -> ast::stmt_ptr
     auto value   = !check(Token::Type::Semicolon) ? parse_expression() : nullptr;
     consume(Token::Type::Semicolon, "expect ';' after return value");
     return ast::ReturnStmt::make(std::move(keyword), std::move(value));
-}
-
-auto loxe::Parser::parse_var_stmt() -> ast::stmt_ptr
-{
-    auto name        = consume(Token::Type::Identifier, "expect variable name");
-    auto initializer = match(Token::Type::Equal) ? parse_expression() : nullptr;
-    consume(Token::Type::Semicolon, "expect ';' after variable declaration");
-    return ast::VariableStmt::make(std::move(name), std::move(initializer));
 }
 
 auto loxe::Parser::parse_while_stmt() -> ast::stmt_ptr
@@ -547,7 +620,7 @@ auto loxe::Parser::consume(Token::Type type, std::string msg) -> Token
 auto loxe::Parser::error(Token token, std::string msg) -> ParseError
 {
     m_error = true;
-    return ParseError(std::move(token), std::move(msg));
+    return ParseError(std::move(token), std::move(msg), m_filename);
 }
 
 auto loxe::Parser::synchronize() -> void

@@ -39,7 +39,8 @@ namespace loxe
         using callable   = std::shared_ptr<class Callable>;
         using instance   = std::shared_ptr<class InstanceObj>;
         using array      = std::shared_ptr<Array>;
-        using value_type = std::variant<nil, boolean, number, string, callable, instance, array>;
+        using module_    = std::shared_ptr<class Module>;
+        using value_type = std::variant<nil, boolean, number, string, callable, instance, array, module_>;
 
     public:
         Object()               : m_value(nil())            {}
@@ -49,6 +50,7 @@ namespace loxe
         Object(callable value) : m_value(std::move(value)) {}
         Object(instance value) : m_value(std::move(value)) {}
         Object(array    value) : m_value(std::move(value)) {}
+        Object(module_  value) : m_value(std::move(value)) {}
 
         template<typename T>
         [[nodiscard]] constexpr auto is() const -> bool

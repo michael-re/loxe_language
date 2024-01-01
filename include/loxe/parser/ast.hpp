@@ -95,7 +95,9 @@ namespace loxe::ast
             virtual auto visit(const_wrapper<IsConst, struct ForStmt>&)        -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct FunctionStmt>&)   -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct IfStmt>&)         -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct ImportStmt>&)     -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct LetStmt>&)        -> R = 0;
+            virtual auto visit(const_wrapper<IsConst, struct ModuleStmt>&)     -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct PrintStmt>&)      -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct ReturnStmt>&)     -> R = 0;
             virtual auto visit(const_wrapper<IsConst, struct VariableStmt>&)   -> R = 0;
@@ -627,6 +629,22 @@ namespace loxe::ast
         stmt_ptr else_branch;
     };
 
+    struct ImportStmt final : public StmtCRTP<ImportStmt>
+    {
+        ImportStmt(Token path, stmt_list declerations)
+            : path(std::move(path)), declerations(std::move(declerations)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ImportStmt> override
+        {
+            auto decs = stmt_list();
+            for (const auto& dec : declerations) decs.emplace_back(dec ? dec->clone() : nullptr);
+            return std::make_unique<ImportStmt>(path, std::move(decs));
+        }
+
+        Token     path;
+        stmt_list declerations;
+    };
+
     struct LetStmt final : public StmtCRTP<LetStmt>
     {
         LetStmt(Token name, expr_ptr initializer)
@@ -640,6 +658,22 @@ namespace loxe::ast
 
         Token    name;
         expr_ptr initializer;
+    };
+
+    struct ModuleStmt final : public StmtCRTP<ModuleStmt>
+    {
+        ModuleStmt(Token name, stmt_list declerations)
+            : name(std::move(name)), declerations(std::move(declerations)) {}
+
+        [[nodiscard]] auto make_clone() const -> std::unique_ptr<ModuleStmt> override
+        {
+            auto decs = stmt_list();
+            for (const auto& dec : declerations) decs.emplace_back(dec ? dec->clone() : nullptr);
+            return std::make_unique<ModuleStmt>(name, std::move(decs));
+        }
+
+        Token     name;
+        stmt_list declerations;
     };
 
     struct PrintStmt final : public StmtCRTP<PrintStmt>
