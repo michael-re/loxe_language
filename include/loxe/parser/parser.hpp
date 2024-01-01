@@ -25,7 +25,7 @@ namespace loxe
         };
 
     public:
-        [[nodiscard]] static auto parse(std::string source, std::string filename = {}) -> std::optional<ast::stmt_list>;
+        [[nodiscard]] auto parse(std::string source, std::string filename = {}) -> std::optional<ast::stmt_list>;
 
     private:
         [[nodiscard]] auto parse_dec_or_stmt() -> ast::stmt_ptr;

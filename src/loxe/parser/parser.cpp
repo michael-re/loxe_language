@@ -17,20 +17,19 @@ loxe::Parser::ParseError::ParseError(Token token, std::string message, std::stri
 
 auto loxe::Parser::parse(std::string source, std::string filename) -> std::optional<ast::stmt_list>
 {
-    auto parser           = Parser();
-    parser.m_error        = false;
-    parser.m_lexer        = Lexer(std::move(source)).lex();
-    parser.m_filename     = std::move(filename);
-    parser.m_import_files = { parser.m_filename };
+    m_error        = false;
+    m_lexer        = Lexer(std::move(source)).lex();
+    m_filename     = std::move(filename);
+    m_import_files = { m_filename };
 
     auto ast = ast::stmt_list();
-    while (!parser.at_end())
+    while (!at_end())
     {
-        if (parser.match(Token::Type::Semicolon)) continue;
-        ast.emplace_back(parser.parse_dec_or_stmt());
+        if (match(Token::Type::Semicolon)) continue;
+        ast.emplace_back(parse_dec_or_stmt());
     }
 
-    return parser.m_error ? std::nullopt : std::optional(std::move(ast));
+    return m_error ? std::nullopt : std::optional(std::move(ast));
 }
 
 auto loxe::Parser::parse_dec_or_stmt() -> ast::stmt_ptr
