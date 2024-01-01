@@ -89,7 +89,6 @@ set(loxe_include_files
         include/loxe/tree_walker/error.hpp
         include/loxe/tree_walker/instance.hpp
         include/loxe/tree_walker/interpreter.hpp
-        include/loxe/tree_walker/module.hpp
         include/loxe/tree_walker/object.hpp
         include/loxe/tree_walker/tree_walker.hpp
 
@@ -110,7 +109,6 @@ set(loxe_source_files
         src/loxe/tree_walker/environment.cpp
         src/loxe/tree_walker/instance.cpp
         src/loxe/tree_walker/interpreter.cpp
-        src/loxe/tree_walker/module.cpp
         src/loxe/tree_walker/object.cpp
         src/loxe/tree_walker/tree_walker.cpp
 

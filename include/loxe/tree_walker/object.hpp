@@ -31,6 +31,23 @@ namespace loxe
             container m_values;
         };
 
+        class Module
+        {
+        public:
+            using env_ptr = std::shared_ptr<class Environment>;
+
+        public:
+            Module(std::string name, env_ptr environment)
+                : m_name(std::move(name)), m_environment(std::move(environment)) {}
+
+            [[nodiscard]] auto to_string() const -> std::string;
+            [[nodiscard]] auto env() -> env_ptr&;
+
+        private:
+            std::string m_name;
+            env_ptr     m_environment;
+        };
+
     public:
         using nil        = std::monostate;
         using boolean    = bool;
@@ -39,7 +56,7 @@ namespace loxe
         using callable   = std::shared_ptr<class Callable>;
         using instance   = std::shared_ptr<class InstanceObj>;
         using array      = std::shared_ptr<Array>;
-        using module_    = std::shared_ptr<class Module>;
+        using module_    = std::shared_ptr<Module>;
         using value_type = std::variant<nil, boolean, number, string, callable, instance, array, module_>;
 
     public:

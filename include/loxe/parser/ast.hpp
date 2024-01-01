@@ -631,18 +631,18 @@ namespace loxe::ast
 
     struct ImportStmt final : public StmtCRTP<ImportStmt>
     {
-        ImportStmt(Token path, stmt_list declerations)
-            : path(std::move(path)), declerations(std::move(declerations)) {}
+        ImportStmt(Token path, stmt_list body)
+            : path(std::move(path)), body(std::move(body)) {}
 
         [[nodiscard]] auto make_clone() const -> std::unique_ptr<ImportStmt> override
         {
-            auto decs = stmt_list();
-            for (const auto& dec : declerations) decs.emplace_back(dec ? dec->clone() : nullptr);
-            return std::make_unique<ImportStmt>(path, std::move(decs));
+            auto bdy = stmt_list();
+            for (const auto& dec : body) bdy.emplace_back(dec ? dec->clone() : nullptr);
+            return std::make_unique<ImportStmt>(path, std::move(bdy));
         }
 
         Token     path;
-        stmt_list declerations;
+        stmt_list body;
     };
 
     struct LetStmt final : public StmtCRTP<LetStmt>
@@ -662,18 +662,18 @@ namespace loxe::ast
 
     struct ModuleStmt final : public StmtCRTP<ModuleStmt>
     {
-        ModuleStmt(Token name, stmt_list declerations)
-            : name(std::move(name)), declerations(std::move(declerations)) {}
+        ModuleStmt(Token name, stmt_list body)
+            : name(std::move(name)), body(std::move(body)) {}
 
         [[nodiscard]] auto make_clone() const -> std::unique_ptr<ModuleStmt> override
         {
-            auto decs = stmt_list();
-            for (const auto& dec : declerations) decs.emplace_back(dec ? dec->clone() : nullptr);
-            return std::make_unique<ModuleStmt>(name, std::move(decs));
+            auto bdy = stmt_list();
+            for (const auto& dec : body) bdy.emplace_back(dec ? dec->clone() : nullptr);
+            return std::make_unique<ModuleStmt>(name, std::move(bdy));
         }
 
         Token     name;
-        stmt_list declerations;
+        stmt_list body;
     };
 
     struct PrintStmt final : public StmtCRTP<PrintStmt>

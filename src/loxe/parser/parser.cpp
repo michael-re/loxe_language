@@ -62,7 +62,7 @@ auto loxe::Parser::parse_declaration() -> ast::stmt_ptr
         if (match(Token::Type::Module)) return parse_module_dec();
         if (match(Token::Type::Let))    return parse_let_dec();
         if (match(Token::Type::Var))    return parse_var_dec();
-        throw error(current(), "expect decleration");
+        throw error(current(), "expect declaration");
     }
     catch (const ParseError& e)
     {
@@ -125,17 +125,17 @@ auto loxe::Parser::parse_import_dec() -> ast::stmt_ptr
     file_parser.m_import_files = m_import_files;
     file_parser.m_filename     = path.lexeme;
 
-    auto declerations = ast::stmt_list();
+    auto body = ast::stmt_list();
     while (!file_parser.at_end())
     {
         if (match(Token::Type::Semicolon)) continue;
-        declerations.emplace_back(file_parser.parse_declaration());
+        body.emplace_back(file_parser.parse_declaration());
     }
 
     if (file_parser.m_error)
         throw error(keyword, "encountered error while parsing file '" + path.lexeme + "'");
 
-    return ast::ImportStmt::make(std::move(path), std::move(declerations));
+    return ast::ImportStmt::make(std::move(path), std::move(body));
 }
 
 auto loxe::Parser::parse_let_dec() -> ast::stmt_ptr
@@ -152,12 +152,12 @@ auto loxe::Parser::parse_module_dec() -> ast::stmt_ptr
     auto name = consume(Token::Type::Identifier, "expect module name");
     consume(Token::Type::LeftBrace, "expect '{' before module body");
 
-    auto declerations = ast::stmt_list();
+    auto body = ast::stmt_list();
     while (!check(Token::Type::RightBrace) && !at_end())
-        declerations.emplace_back(parse_declaration());
+        body.emplace_back(parse_declaration());
 
     consume(Token::Type::RightBrace, "expect '}' after module body");
-    return ast::ModuleStmt::make(std::move(name), std::move(declerations));
+    return ast::ModuleStmt::make(std::move(name), std::move(body));
 }
 
 auto loxe::Parser::parse_var_dec()  -> ast::stmt_ptr

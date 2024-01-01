@@ -1,7 +1,7 @@
 #include "loxe/tree_walker/object.hpp"
-#include "loxe/tree_walker/module.hpp"
 #include "loxe/tree_walker/callable.hpp"
 #include "loxe/tree_walker/instance.hpp"
+#include "loxe/tree_walker/environment.hpp"
 
 auto loxe::Object::is_truthy() const -> bool
 {
@@ -58,4 +58,14 @@ auto loxe::Object::Array::access_at(double index) const -> const Object&
 auto loxe::Object::Array::assign_at(double index, Object value) -> Object&
 {
     return (m_values[static_cast<std::size_t>(index)] = std::move(value));
+}
+
+auto loxe::Object::Module::to_string() const -> std::string
+{
+    return "<module " + m_name + ">";
+}
+
+auto loxe::Object::Module::env() -> env_ptr&
+{
+    return m_environment;
 }

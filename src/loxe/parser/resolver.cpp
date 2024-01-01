@@ -117,7 +117,7 @@ auto loxe::Resolver::visit(ast::IfStmt& stmt) -> void
 
 auto loxe::Resolver::visit(ast::ImportStmt& stmt) -> void
 {
-    resolve(stmt.declerations);
+    resolve(stmt.body);
 }
 
 auto loxe::Resolver::visit(ast::LetStmt& stmt) -> void
@@ -135,8 +135,11 @@ auto loxe::Resolver::visit(ast::LetStmt& stmt) -> void
 auto loxe::Resolver::visit(ast::ModuleStmt& stmt) -> void
 {
     declare(stmt.name);
-    resolve(stmt.declerations);
     define(stmt.name);
+
+    begin_scope();
+    resolve(stmt.body);
+    end_scope();
 }
 
 auto loxe::Resolver::visit(ast::PrintStmt& stmt) -> void

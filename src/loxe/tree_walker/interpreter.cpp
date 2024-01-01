@@ -1,6 +1,5 @@
 #include "loxe/common/utility.hpp"
 #include "loxe/tree_walker/error.hpp"
-#include "loxe/tree_walker/module.hpp"
 #include "loxe/tree_walker/callable.hpp"
 #include "loxe/tree_walker/instance.hpp"
 #include "loxe/tree_walker/environment.hpp"
@@ -156,7 +155,7 @@ auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::ImportStmt& stmt) -> void
 {
-    for (const auto& dec : stmt.declerations)
+    for (const auto& dec : stmt.body)
         execute(dec);
 }
 
@@ -167,16 +166,16 @@ auto loxe::Interpreter::visit(const ast::LetStmt& stmt) -> void
 
 auto loxe::Interpreter::visit(const ast::ModuleStmt& stmt) -> void
 {
-    auto previous    = std::move(m_environment);
-    auto environment = std::make_shared<Environment>(previous.get());
+    auto previous = std::move(m_environment);
+    m_environment = std::make_shared<Environment>(previous.get());
 
-    m_environment = std::move(environment);
-    for (const auto& dec : stmt.declerations)
+    for (const auto& dec : stmt.body)
         execute(dec);
 
-    auto mod      = std::move((*m_environment.get()));
-    m_environment = std::move(previous);
-    m_environment->define(stmt.name, std::make_shared<Module>(stmt.name.lexeme, std::move(mod)));
+    auto module_env = std::move(m_environment);
+    m_environment   = std::move(previous);
+    auto new_module = std::make_shared<Object::Module>(stmt.name.lexeme, std::move(module_env));
+    m_environment->define(stmt.name, { std::move(new_module) });
 }
 
 auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
@@ -321,7 +320,7 @@ auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> Object
     else if (value.is<Object::array>() && expr.name.lexeme == "length")
         return static_cast<Object::number>(value.as<Object::array>()->length());
     else if (value.is<Object::module_>())
-        return value.as<Object::module_>()->env().access(expr.name);
+        return value.as<Object::module_>()->env()->access(expr.name);
 
     throw RuntimeError(expr.name, "only instance have properties");
 }
@@ -355,7 +354,7 @@ auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> Object
     if (auto object = evaluate(expr.object); object.is<Object::instance>())
         return object.as<Object::instance>()->set(expr.name, evaluate(expr.value));
     else if (object.is<Object::module_>())
-        return object.as<Object::module_>()->env().assign(expr.name, evaluate(expr.value));
+        return object.as<Object::module_>()->env()->assign(expr.name, evaluate(expr.value));
     throw RuntimeError(expr.name, "only instances have properties");
 }
 
