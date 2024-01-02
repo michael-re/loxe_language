@@ -7,13 +7,13 @@
 #include "loxe/parser/parser.hpp"
 #include "loxe/parser/resolver.hpp"
 
-auto loxe::tree_walker::run_file(std::string_view filename) -> void
+auto loxe::tree_walker::run_file(std::string filename) -> void
 {
-    auto file = std::ifstream(filename.data());
+    auto file = std::ifstream(filename);
     if (!file.is_open())
         return utility::println(std::cerr, "[tree_walker]: failed to open file: '{}'", filename);
 
-    auto ast = Parser().parse(utility::as_string(file.rdbuf()), std::string(filename));
+    auto ast = Parser().parse(utility::as_string(file.rdbuf()), filename);
     if (!ast)
         return utility::println(std::cerr, "[tree_walker]: encountered parser error in file '{}'", filename);
 
