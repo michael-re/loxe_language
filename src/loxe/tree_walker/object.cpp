@@ -3,14 +3,14 @@
 #include "loxe/tree_walker/instance.hpp"
 #include "loxe/tree_walker/environment.hpp"
 
-auto loxe::Object::is_truthy() const -> bool
+auto loxe::tree_walker::Object::is_truthy() const -> bool
 {
     if (is<nil>())     return false;
     if (is<boolean>()) return as<boolean>();
     return true;
 }
 
-auto loxe::Object::stringify() const -> std::string
+auto loxe::tree_walker::Object::stringify() const -> std::string
 {
     switch (m_value.index())
     {
@@ -34,12 +34,12 @@ auto loxe::Object::stringify() const -> std::string
     return {};
 }
 
-auto loxe::Object::Array::length() const -> std::size_t
+auto loxe::tree_walker::Object::Array::length() const -> std::size_t
 {
     return m_values.size();
 }
 
-auto loxe::Object::Array::to_string() const -> std::string
+auto loxe::tree_walker::Object::Array::to_string() const -> std::string
 {
     auto string = std::string("[");
     for (const auto& value : m_values)
@@ -50,22 +50,22 @@ auto loxe::Object::Array::to_string() const -> std::string
     return string.append("]");
 }
 
-auto loxe::Object::Array::access_at(double index) const -> const Object&
+auto loxe::tree_walker::Object::Array::access_at(double index) const -> const Object&
 {
     return m_values[static_cast<std::size_t>(index)];
 }
 
-auto loxe::Object::Array::assign_at(double index, Object value) -> Object&
+auto loxe::tree_walker::Object::Array::assign_at(double index, Object value) -> Object&
 {
     return (m_values[static_cast<std::size_t>(index)] = std::move(value));
 }
 
-auto loxe::Object::Module::to_string() const -> std::string
+auto loxe::tree_walker::Object::Module::to_string() const -> std::string
 {
     return "<module " + m_name + ">";
 }
 
-auto loxe::Object::Module::env() -> env_ptr&
+auto loxe::tree_walker::Object::Module::env() -> env_ptr&
 {
     return m_environment;
 }

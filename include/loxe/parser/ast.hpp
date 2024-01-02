@@ -3,13 +3,12 @@
 #ifndef LOXE_PARSER_AST_HPP
 #define LOXE_PARSER_AST_HPP
 
+#include <any>
 #include <memory>
 #include <string>
 #include <vector>
 #include <cstdint>
 #include <optional>
-
-#include "loxe/tree_walker/object.hpp"
 
 #include "token.hpp"
 
@@ -71,9 +70,9 @@ namespace loxe::ast
 
     public:
         virtual ~Expr() = default;
-        virtual auto accept(visitor<void>&)               -> void   = 0;
-        virtual auto accept(const_visitor<void>&)   const -> void   = 0;
-        virtual auto accept(const_visitor<Object>&) const -> Object = 0;
+        virtual auto accept(visitor<void>&)                 -> void     = 0;
+        virtual auto accept(const_visitor<void>&)     const -> void     = 0;
+        virtual auto accept(const_visitor<std::any>&) const -> std::any = 0;
 
         [[nodiscard]] virtual auto clone() const -> expr_ptr = 0;
 
@@ -109,15 +108,19 @@ namespace loxe::ast
 
     public:
         virtual ~Stmt() = default;
-        virtual auto accept(visitor<void>&)             -> void   = 0;
-        virtual auto accept(const_visitor<void>&) const -> void   = 0;
+        virtual auto accept(visitor<void>&)                 -> void     = 0;
+        virtual auto accept(const_visitor<void>&)     const -> void     = 0;
+        virtual auto accept(const_visitor<std::any>&) const -> std::any = 0;
 
         [[nodiscard]] virtual auto clone() const -> stmt_ptr = 0;
     };
 
-    template<typename Derived>
-    struct ExprCRTP : public Expr
+    template<typename Base, typename Derived>
+    struct AstCRTP : public Base
     {
+        template<typename R> using visitor       = typename Base::visitor<R>;
+        template<typename R> using const_visitor = typename Base::const_visitor<R>;
+
         auto accept(visitor<void>& visitor) -> void override
         {
             return visitor.visit(*static_cast<Derived*>(this));
@@ -128,12 +131,12 @@ namespace loxe::ast
             return visitor.visit(*static_cast<const Derived*>(this));
         }
 
-        auto accept(const_visitor<Object>& visitor) const -> Object override
+        auto accept(const_visitor<std::any>& visitor) const -> std::any override
         {
             return visitor.visit(*static_cast<const Derived*>(this));
         }
 
-        [[nodiscard]] auto clone() const -> expr_ptr override
+        [[nodiscard]] auto clone() const -> std::unique_ptr<Base> override
         {
             return this->make_clone();
         }
@@ -149,32 +152,10 @@ namespace loxe::ast
     };
 
     template<typename Derived>
-    struct StmtCRTP : public Stmt
-    {
-        auto accept(visitor<void>& visitor) -> void override
-        {
-            return visitor.visit(*static_cast<Derived*>(this));
-        }
+    using ExprCRTP = AstCRTP<Expr, Derived>;
 
-        auto accept(const_visitor<void>& visitor) const -> void override
-        {
-            return visitor.visit(*static_cast<const Derived*>(this));
-        }
-
-        [[nodiscard]] auto clone() const -> stmt_ptr override
-        {
-            return this->make_clone();
-        }
-
-        template<typename... Args>
-        [[nodiscard]] static auto make(Args&&... args) -> std::unique_ptr<Derived>
-        {
-            return std::make_unique<Derived>(std::forward<Args>(args)...);
-        }
-
-    protected:
-        [[nodiscard]] virtual auto make_clone() const -> std::unique_ptr<Derived> = 0;
-    };
+    template<typename Derived>
+    using StmtCRTP = AstCRTP<Stmt, Derived>;
 } // namespace loxe::ast
 
 namespace loxe::ast

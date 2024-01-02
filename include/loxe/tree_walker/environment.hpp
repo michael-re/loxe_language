@@ -7,9 +7,11 @@
 #include <cstdint>
 #include <unordered_map>
 
+#include "loxe/parser/token.hpp"
+
 #include "object.hpp"
 
-namespace loxe
+namespace loxe::tree_walker
 {
     class Environment
     {
@@ -34,6 +36,6 @@ namespace loxe
         Environment* m_enclosing;
         value_map    m_values;
     };
-} // namespace loxe
+} // namespace loxe::tree_walker
 
 #endif // !LOXE_TREE_WALKER_ENVIRONMENT_HPP

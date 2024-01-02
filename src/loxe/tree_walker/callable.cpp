@@ -4,7 +4,7 @@
 #include "loxe/tree_walker/environment.hpp"
 #include "loxe/tree_walker/interpreter.hpp"
 
-auto loxe::FunctionObj::call(Interpreter& interpreter, args args) const -> Object
+auto loxe::tree_walker::FunctionObj::call(Interpreter& interpreter, args args) const -> Object
 {
     static const auto implicit_this = Token(Token::Type::Implicit, -1, -1, "this");
 
@@ -28,19 +28,19 @@ auto loxe::FunctionObj::call(Interpreter& interpreter, args args) const -> Objec
     return m_init ? m_closure->access_at(0, implicit_this) : Object();
 }
 
-auto loxe::FunctionObj::arity() const -> std::size_t
+auto loxe::tree_walker::FunctionObj::arity() const -> std::size_t
 {
     if (!m_declaration) return 0;
     return m_declaration->params.size();
 }
 
-auto loxe::FunctionObj::to_string() const -> std::string
+auto loxe::tree_walker::FunctionObj::to_string() const -> std::string
 {
     if (!m_declaration) return "<error: function does not have a declaration>";
     return "<fn " + m_declaration->name.lexeme + ">";
 }
 
-auto loxe::FunctionObj::bind(inst_ptr instance) -> Object
+auto loxe::tree_walker::FunctionObj::bind(inst_ptr instance) -> Object
 {
     static const auto implicit_this = Token(Token::Type::Implicit, -1, -1, "this");
     auto environment = std::make_shared<Environment>(m_closure.get());
@@ -48,7 +48,7 @@ auto loxe::FunctionObj::bind(inst_ptr instance) -> Object
     return { std::make_shared<FunctionObj>(m_declaration, std::move(environment), m_init) };
 }
 
-auto loxe::ClassObj::call(Interpreter& interpreter, args args) const -> Object
+auto loxe::tree_walker::ClassObj::call(Interpreter& interpreter, args args) const -> Object
 {
     auto instance = std::make_shared<InstanceObj>(*this);
     if (auto init = m_methods.find("init"); init != m_methods.end())
@@ -57,24 +57,24 @@ auto loxe::ClassObj::call(Interpreter& interpreter, args args) const -> Object
     return { instance };
 }
 
-auto loxe::ClassObj::arity() const -> std::size_t
+auto loxe::tree_walker::ClassObj::arity() const -> std::size_t
 {
     if (auto init = m_methods.find("init"); init != m_methods.end())
         return init->second->arity();
     return 0;
 }
 
-auto loxe::ClassObj::to_string() const -> std::string
+auto loxe::tree_walker::ClassObj::to_string() const -> std::string
 {
     return "<class " + m_name.lexeme + ">";
 }
 
-auto loxe::ClassObj::name() const -> const std::string&
+auto loxe::tree_walker::ClassObj::name() const -> const std::string&
 {
     return m_name.lexeme;
 }
 
-auto loxe::ClassObj::find_method(const Token& name) const -> fun_ptr
+auto loxe::tree_walker::ClassObj::find_method(const Token& name) const -> fun_ptr
 {
     const auto& id = name.lexeme;
     if (auto it = m_methods.find(id); it != m_methods.end()) return it->second;

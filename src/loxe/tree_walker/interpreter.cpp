@@ -5,10 +5,10 @@
 #include "loxe/tree_walker/environment.hpp"
 #include "loxe/tree_walker/interpreter.hpp"
 
-loxe::Interpreter::Interpreter()
+loxe::tree_walker::Interpreter::Interpreter()
     : m_global(std::make_shared<Environment>()), m_environment(m_global) {}
 
-auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
+auto loxe::tree_walker::Interpreter::interpret(const ast::stmt_list& program) -> void
 {
     try
     {
@@ -21,17 +21,17 @@ auto loxe::Interpreter::interpret(const ast::stmt_list& program) -> void
     }
 }
 
-auto loxe::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object
+auto loxe::tree_walker::Interpreter::evaluate(const ast::expr_ptr& expr) -> Object
 {
-    return expr ? expr->accept(*this) : Object();
+    return expr ? std::any_cast<Object>(expr->accept(*this)) : Object();
 }
 
-auto loxe::Interpreter::execute(const ast::stmt_ptr& stmt) -> void
+auto loxe::tree_walker::Interpreter::execute(const ast::stmt_ptr& stmt) -> void
 {
     if (stmt) stmt->accept(*this);
 }
 
-auto loxe::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> void
+auto loxe::tree_walker::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> void
 {
     auto previous = std::move(m_environment);
     try
@@ -64,18 +64,18 @@ auto loxe::Interpreter::execute(const ast::stmt_list& stmts, env_ptr env) -> voi
     }
 }
 
-auto loxe::Interpreter::visit(const ast::BlockStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::BlockStmt& stmt) -> void
 {
     execute(stmt.statements, std::make_shared<Environment>(m_environment.get()));
 }
 
-auto loxe::Interpreter::visit(const ast::BreakStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::BreakStmt& stmt) -> void
 {
     utility::ignore(stmt);
     throw BreakError();
 }
 
-auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::ClassStmt& stmt) -> void
 {
     static const auto implicit_super = Token(Token::Type::Implicit, -1, -1, "super");
 
@@ -108,18 +108,18 @@ auto loxe::Interpreter::visit(const ast::ClassStmt& stmt) -> void
     m_environment->define(stmt.name, { std::move(class_dec) });
 }
 
-auto loxe::Interpreter::visit(const ast::ContinueStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::ContinueStmt& stmt) -> void
 {
     utility::ignore(stmt);
     throw ContinueError();
 }
 
-auto loxe::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::ExpressionStmt& stmt) -> void
 {
     evaluate(stmt.expression);
 }
 
-auto loxe::Interpreter::visit(const ast::ForStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::ForStmt& stmt) -> void
 {
     for (execute(stmt.initializer); evaluate(stmt.condition).is_truthy(); evaluate(stmt.update))
     {
@@ -138,14 +138,14 @@ auto loxe::Interpreter::visit(const ast::ForStmt& stmt) -> void
     }
 }
 
-auto loxe::Interpreter::visit(const ast::FunctionStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::FunctionStmt& stmt) -> void
 {
     auto closure  = std::make_shared<Environment>(m_environment.get());
     auto function = std::make_shared<FunctionObj>(stmt.function->make_clone(), std::move(closure));
     m_environment->define(stmt.function->name, { std::move(function) });
 }
 
-auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::IfStmt& stmt) -> void
 {
     if (evaluate(stmt.condition).is_truthy())
         execute(stmt.then_branch);
@@ -153,18 +153,18 @@ auto loxe::Interpreter::visit(const ast::IfStmt& stmt) -> void
         execute(stmt.else_branch);
 }
 
-auto loxe::Interpreter::visit(const ast::ImportStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::ImportStmt& stmt) -> void
 {
     for (const auto& dec : stmt.body)
         execute(dec);
 }
 
-auto loxe::Interpreter::visit(const ast::LetStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::LetStmt& stmt) -> void
 {
     m_environment->define(stmt.name, evaluate(stmt.initializer));
 }
 
-auto loxe::Interpreter::visit(const ast::ModuleStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::ModuleStmt& stmt) -> void
 {
     auto previous = std::move(m_environment);
     m_environment = std::make_shared<Environment>(previous.get());
@@ -178,22 +178,22 @@ auto loxe::Interpreter::visit(const ast::ModuleStmt& stmt) -> void
     m_environment->define(stmt.name, { std::move(new_module) });
 }
 
-auto loxe::Interpreter::visit(const ast::PrintStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::PrintStmt& stmt) -> void
 {
     utility::println("{}", evaluate(stmt.expression).stringify());
 }
 
-auto loxe::Interpreter::visit(const ast::ReturnStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::ReturnStmt& stmt) -> void
 {
     throw ReturnError(evaluate(stmt.value));
 }
 
-auto loxe::Interpreter::visit(const ast::VariableStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::VariableStmt& stmt) -> void
 {
     m_environment->define(stmt.name, evaluate(stmt.initializer));
 }
 
-auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
+auto loxe::tree_walker::Interpreter::visit(const ast::WhileStmt& stmt) -> void
 {
     while (evaluate(stmt.condition).is_truthy())
     {
@@ -212,7 +212,7 @@ auto loxe::Interpreter::visit(const ast::WhileStmt& stmt) -> void
     }
 }
 
-auto loxe::Interpreter::visit(const ast::ArrayExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::ArrayExpr& expr) -> std::any
 {
     auto values = Object::Array::container();
     for (const auto& value : expr.initializer)
@@ -227,15 +227,15 @@ auto loxe::Interpreter::visit(const ast::ArrayExpr& expr) -> Object
         if (values.size() < as_number) values.resize(as_number, Object());
     }
 
-    return { std::make_shared<Object::Array>(std::move(values)) };
+    return Object{ std::make_shared<Object::Array>(std::move(values)) };
 }
 
-auto loxe::Interpreter::visit(const ast::AssignExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::AssignExpr& expr) -> std::any
 {
     return m_environment->assign_at(*expr.depth, expr.name, evaluate(expr.value));
 }
 
-auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::BinaryExpr& expr) -> std::any
 {
     auto number = [&expr](const Object& object) -> Object::number {
         if (!object.is<Object::number>())
@@ -248,32 +248,32 @@ auto loxe::Interpreter::visit(const ast::BinaryExpr& expr) -> Object
 
     switch (expr.op.type)
     {
-        case Token::Type::BangEqual:  return { lhs != rhs };
-        case Token::Type::EqualEqual: return { lhs == rhs };
+        case Token::Type::BangEqual:  return Object{ lhs != rhs };
+        case Token::Type::EqualEqual: return Object{ lhs == rhs };
         case Token::Type::Plus:
             if (lhs.is<Object::string>() && rhs.is<Object::string>())
-                return { lhs.as<Object::string>() + rhs.as<Object::string>() };
+                return Object{ lhs.as<Object::string>() + rhs.as<Object::string>() };
             if (lhs.is<Object::number>() && rhs.is<Object::number>())
-                return { lhs.as<Object::number>() + rhs.as<Object::number>() };
+                return Object{ lhs.as<Object::number>() + rhs.as<Object::number>() };
             throw RuntimeError(expr.op, "'+' operator requires two numbers or strings");
             break;
-        case Token::Type::Minus:        return { number(lhs) -  number(rhs) };
-        case Token::Type::Star:         return { number(lhs) *  number(rhs) };
-        case Token::Type::Slash:        return { number(lhs) /  number(rhs) };
-        case Token::Type::Greater:      return { number(lhs) >  number(rhs) };
-        case Token::Type::GreaterEqual: return { number(lhs) >= number(rhs) };
-        case Token::Type::Less:         return { number(lhs) <  number(rhs) };
-        case Token::Type::LessEqual:    return { number(lhs) <= number(rhs) };
+        case Token::Type::Minus:        return Object{ number(lhs) -  number(rhs) };
+        case Token::Type::Star:         return Object{ number(lhs) *  number(rhs) };
+        case Token::Type::Slash:        return Object{ number(lhs) /  number(rhs) };
+        case Token::Type::Greater:      return Object{ number(lhs) >  number(rhs) };
+        case Token::Type::GreaterEqual: return Object{ number(lhs) >= number(rhs) };
+        case Token::Type::Less:         return Object{ number(lhs) <  number(rhs) };
+        case Token::Type::LessEqual:    return Object{ number(lhs) <= number(rhs) };
         default: throw RuntimeError(expr.op, "unrecognized binary operator: '" + expr.op.lexeme + "'");
     }
 }
 
-auto loxe::Interpreter::visit(const ast::BooleanExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::BooleanExpr& expr) -> std::any
 {
-    return { expr.value };
+    return Object{ expr.value };
 }
 
-auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::CallExpr& expr) -> std::any
 {
     auto callee = evaluate(expr.callee);
     auto args   = Callable::args();
@@ -292,7 +292,7 @@ auto loxe::Interpreter::visit(const ast::CallExpr& expr) -> Object
     return callable->call(*this, std::move(args));
 }
 
-auto loxe::Interpreter::visit(const ast::CommaExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::CommaExpr& expr) -> std::any
 {
     for (auto it = expr.expressions.begin() + 1; it < expr.expressions.end(); it++)
         evaluate(*it);
@@ -300,37 +300,37 @@ auto loxe::Interpreter::visit(const ast::CommaExpr& expr) -> Object
     return evaluate(expr.expressions.back());
 }
 
-auto loxe::Interpreter::visit(const ast::ConditionalExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::ConditionalExpr& expr) -> std::any
 {
     auto condition = evaluate(expr.condition);
     return condition.is_truthy() ? evaluate(expr.then_branch) : evaluate(expr.else_branch);
 }
 
-auto loxe::Interpreter::visit(const ast::FunctionExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::FunctionExpr& expr) -> std::any
 {
     auto closure  = std::make_shared<Environment>(m_environment.get());
     auto function = std::make_shared<FunctionObj>(expr.make_clone(), std::move(closure));
-    return { std::move(function) };
+    return Object{ std::move(function) };
 }
 
-auto loxe::Interpreter::visit(const ast::GetExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::GetExpr& expr) -> std::any
 {
     if (auto value = evaluate(expr.object); value.is<Object::instance>())
         return value.as<Object::instance>()->get(expr.name);
     else if (value.is<Object::array>() && expr.name.lexeme == "length")
-        return static_cast<Object::number>(value.as<Object::array>()->length());
+        return Object{static_cast<Object::number>(value.as<Object::array>()->length())};
     else if (value.is<Object::module_>())
         return value.as<Object::module_>()->env()->access(expr.name);
 
     throw RuntimeError(expr.name, "only instance have properties");
 }
 
-auto loxe::Interpreter::visit(const ast::GroupingExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::GroupingExpr& expr) -> std::any
 {
     return evaluate(expr.expression);
 }
 
-auto loxe::Interpreter::visit(const ast::LogicalExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::LogicalExpr& expr) -> std::any
 {
     auto lhs = evaluate(expr.lhs);
     if (expr.op.type == Token::Type::Or  && lhs.is_truthy())  return lhs;
@@ -338,18 +338,18 @@ auto loxe::Interpreter::visit(const ast::LogicalExpr& expr) -> Object
     return evaluate(expr.rhs);
 }
 
-auto loxe::Interpreter::visit(const ast::NilExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::NilExpr& expr) -> std::any
 {
     utility::ignore(expr);
-    return {};
+    return Object{};
 }
 
-auto loxe::Interpreter::visit(const ast::NumberExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::NumberExpr& expr) -> std::any
 {
-    return { expr.value };
+    return Object{ expr.value };
 }
 
-auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::SetExpr& expr) -> std::any
 {
     if (auto object = evaluate(expr.object); object.is<Object::instance>())
         return object.as<Object::instance>()->set(expr.name, evaluate(expr.value));
@@ -358,12 +358,12 @@ auto loxe::Interpreter::visit(const ast::SetExpr& expr) -> Object
     throw RuntimeError(expr.name, "only instances have properties");
 }
 
-auto loxe::Interpreter::visit(const ast::StringExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::StringExpr& expr) -> std::any
 {
-    return { expr.value };
+    return Object{ expr.value };
 }
 
-auto loxe::Interpreter::visit(const ast::SubscriptExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::SubscriptExpr& expr) -> std::any
 {
     auto object = evaluate(expr.expression);
     if (!object.is<Object::array>())
@@ -384,7 +384,7 @@ auto loxe::Interpreter::visit(const ast::SubscriptExpr& expr) -> Object
     return array->access_at(index_value);
 }
 
-auto loxe::Interpreter::visit(const ast::SuperExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::SuperExpr& expr) -> std::any
 {
     auto distance   = *expr.depth;
     auto superclass = m_environment->access_at(distance, expr.keyword);
@@ -396,36 +396,36 @@ auto loxe::Interpreter::visit(const ast::SuperExpr& expr) -> Object
     throw RuntimeError(expr.method, "undefined property '" + expr.method.lexeme + "'");
 }
 
-auto loxe::Interpreter::visit(const ast::ThisExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::ThisExpr& expr) -> std::any
 {
     return look_up_var(expr.keyword, expr);
 }
 
-auto loxe::Interpreter::visit(const ast::UnaryExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::UnaryExpr& expr) -> std::any
 {
     switch (auto operand = evaluate(expr.operand); expr.op.type)
     {
         case  Token::Type::Plus:
             if (!operand.is<Object::number>())
                 throw RuntimeError(expr.op, "'+' unary operator requires a numbers");
-            return { +operand.as<Object::number>() };
+            return Object{ +operand.as<Object::number>() };
         case Token::Type::Minus:
             if (!operand.is<Object::number>())
                 throw RuntimeError(expr.op, "'-' unary operator requires a numbers");
-            return { -operand.as<Object::number>() };
+            return Object{ -operand.as<Object::number>() };
         case Token::Type::Bang:
-            return { !operand.is_truthy() };
+            return Object{ !operand.is_truthy() };
         default:
             throw RuntimeError(expr.op, "invalid unary operator");
     }
 }
 
-auto loxe::Interpreter::visit(const ast::VariableExpr& expr) -> Object
+auto loxe::tree_walker::Interpreter::visit(const ast::VariableExpr& expr) -> std::any
 {
     return look_up_var(expr.name, expr);
 }
 
-auto loxe::Interpreter::look_up_var(const Token& name, const ast::Expr& expr) -> const Object&
+auto loxe::tree_walker::Interpreter::look_up_var(const Token& name, const ast::Expr& expr) -> const Object&
 {
     return expr.depth ? m_environment->access_at(*expr.depth, name) : m_global->access(name);
 }

@@ -8,7 +8,7 @@
 #include <vector>
 #include <variant>
 
-namespace loxe
+namespace loxe::tree_walker
 {
     class Object
     {
@@ -96,6 +96,6 @@ namespace loxe
     private:
         value_type m_value;
     };
-} // namespace loxe
+} // namespace loxe::tree_walker
 
 #endif // !LOXE_TREE_WALKER_OBJECT_HPP

@@ -9,7 +9,7 @@
 
 #include "object.hpp"
 
-namespace loxe
+namespace loxe::tree_walker
 {
     struct RuntimeError : public Exception
     {
@@ -39,6 +39,6 @@ namespace loxe
         ContinueError()
             : Exception("using exception to continue in loop") {}
     };
-} // namespace loxe
+} // namespace loxe::tree_walker
 
 #endif // !LOXE_TREE_WALKER_ERROR_HPP

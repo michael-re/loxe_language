@@ -10,7 +10,7 @@
 #include "object.hpp"
 #include "callable.hpp"
 
-namespace loxe
+namespace loxe::tree_walker
 {
     class InstanceObj : public std::enable_shared_from_this<InstanceObj>
     {
@@ -31,6 +31,6 @@ namespace loxe
         class_type m_class;
         field_type m_fields;
     };
-} // namespace loxe
+} // namespace loxe::tree_walker
 
 #endif // !LOXE_TREE_WALKER_INSTANCE_HPP

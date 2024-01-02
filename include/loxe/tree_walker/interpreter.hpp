@@ -10,9 +10,9 @@
 #include "object.hpp"
 #include "environment.hpp"
 
-namespace loxe
+namespace loxe::tree_walker
 {
-    class Interpreter : public ast::Stmt::const_visitor<void>, public ast::Expr::const_visitor<Object>
+    class Interpreter : public ast::Stmt::const_visitor<void>, public ast::Expr::const_visitor<std::any>
     {
     public:
         using env_ptr = std::shared_ptr<Environment>;
@@ -42,26 +42,26 @@ namespace loxe
         auto visit(const ast::VariableStmt&   stmt) -> void override;
         auto visit(const ast::WhileStmt&      stmt) -> void override;
 
-        auto visit(const ast::ArrayExpr&       expr) -> Object override;
-        auto visit(const ast::AssignExpr&      expr) -> Object override;
-        auto visit(const ast::BinaryExpr&      expr) -> Object override;
-        auto visit(const ast::BooleanExpr&     expr) -> Object override;
-        auto visit(const ast::CallExpr&        expr) -> Object override;
-        auto visit(const ast::CommaExpr&       expr) -> Object override;
-        auto visit(const ast::ConditionalExpr& expr) -> Object override;
-        auto visit(const ast::FunctionExpr&    expr) -> Object override;
-        auto visit(const ast::GetExpr&         expr) -> Object override;
-        auto visit(const ast::GroupingExpr&    expr) -> Object override;
-        auto visit(const ast::LogicalExpr&     expr) -> Object override;
-        auto visit(const ast::NilExpr&         expr) -> Object override;
-        auto visit(const ast::NumberExpr&      expr) -> Object override;
-        auto visit(const ast::SetExpr&         expr) -> Object override;
-        auto visit(const ast::StringExpr&      expr) -> Object override;
-        auto visit(const ast::SubscriptExpr&   expr) -> Object override;
-        auto visit(const ast::SuperExpr&       expr) -> Object override;
-        auto visit(const ast::ThisExpr&        expr) -> Object override;
-        auto visit(const ast::UnaryExpr&       expr) -> Object override;
-        auto visit(const ast::VariableExpr&    expr) -> Object override;
+        auto visit(const ast::ArrayExpr&       expr) -> std::any override;
+        auto visit(const ast::AssignExpr&      expr) -> std::any override;
+        auto visit(const ast::BinaryExpr&      expr) -> std::any override;
+        auto visit(const ast::BooleanExpr&     expr) -> std::any override;
+        auto visit(const ast::CallExpr&        expr) -> std::any override;
+        auto visit(const ast::CommaExpr&       expr) -> std::any override;
+        auto visit(const ast::ConditionalExpr& expr) -> std::any override;
+        auto visit(const ast::FunctionExpr&    expr) -> std::any override;
+        auto visit(const ast::GetExpr&         expr) -> std::any override;
+        auto visit(const ast::GroupingExpr&    expr) -> std::any override;
+        auto visit(const ast::LogicalExpr&     expr) -> std::any override;
+        auto visit(const ast::NilExpr&         expr) -> std::any override;
+        auto visit(const ast::NumberExpr&      expr) -> std::any override;
+        auto visit(const ast::SetExpr&         expr) -> std::any override;
+        auto visit(const ast::StringExpr&      expr) -> std::any override;
+        auto visit(const ast::SubscriptExpr&   expr) -> std::any override;
+        auto visit(const ast::SuperExpr&       expr) -> std::any override;
+        auto visit(const ast::ThisExpr&        expr) -> std::any override;
+        auto visit(const ast::UnaryExpr&       expr) -> std::any override;
+        auto visit(const ast::VariableExpr&    expr) -> std::any override;
 
     private:
         auto look_up_var(const Token& name, const ast::Expr& expr) -> const Object&;
@@ -70,6 +70,6 @@ namespace loxe
         env_ptr m_global;
         env_ptr m_environment;
     };
-} // namespace loxe
+} // namespace loxe::tree_walker
 
 #endif // !LOXE_TREE_WALKER_INTERPRETER_HPP

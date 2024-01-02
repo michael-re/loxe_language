@@ -14,7 +14,7 @@
 
 #include "object.hpp"
 
-namespace loxe
+namespace loxe::tree_walker
 {
     class Interpreter;
     class Environment;
@@ -78,6 +78,6 @@ namespace loxe
         super_type   m_superclass;
         methods_type m_methods;
     };
-} // namespace loxe
+} // namespace loxe::tree_walker
 
 #endif // !LOXE_TREE_WALKER_CALLABLE_HPP
