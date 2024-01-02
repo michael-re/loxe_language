@@ -115,12 +115,9 @@ namespace loxe::ast
         [[nodiscard]] virtual auto clone() const -> stmt_ptr = 0;
     };
 
-    template<typename Base, typename Derived>
-    struct AstCRTP : public Base
+    template<typename Derived>
+    struct ExprCRTP : public Expr
     {
-        template<typename R> using visitor       = typename Base::visitor<R>;
-        template<typename R> using const_visitor = typename Base::const_visitor<R>;
-
         auto accept(visitor<void>& visitor) -> void override
         {
             return visitor.visit(*static_cast<Derived*>(this));
@@ -136,7 +133,7 @@ namespace loxe::ast
             return visitor.visit(*static_cast<const Derived*>(this));
         }
 
-        [[nodiscard]] auto clone() const -> std::unique_ptr<Base> override
+        [[nodiscard]] auto clone() const -> expr_ptr override
         {
             return this->make_clone();
         }
@@ -148,14 +145,41 @@ namespace loxe::ast
         }
 
     protected:
-        [[nodiscard]] virtual auto make_clone() const -> std::unique_ptr<Derived> = 0;
+        [[nodiscard]] virtual auto make_clone() const->std::unique_ptr<Derived> = 0;
     };
 
     template<typename Derived>
-    using ExprCRTP = AstCRTP<Expr, Derived>;
+    struct StmtCRTP : public Stmt
+    {
+        auto accept(visitor<void>& visitor) -> void override
+        {
+            return visitor.visit(*static_cast<Derived*>(this));
+        }
 
-    template<typename Derived>
-    using StmtCRTP = AstCRTP<Stmt, Derived>;
+        auto accept(const_visitor<void>& visitor) const -> void override
+        {
+            return visitor.visit(*static_cast<const Derived*>(this));
+        }
+
+        auto accept(const_visitor<std::any>& visitor) const -> std::any override
+        {
+            return visitor.visit(*static_cast<const Derived*>(this));
+        }
+
+        [[nodiscard]] auto clone() const -> stmt_ptr override
+        {
+            return this->make_clone();
+        }
+
+        template<typename... Args>
+        [[nodiscard]] static auto make(Args&&... args) -> std::unique_ptr<Derived>
+        {
+            return std::make_unique<Derived>(std::forward<Args>(args)...);
+        }
+
+    protected:
+        [[nodiscard]] virtual auto make_clone() const->std::unique_ptr<Derived> = 0;
+    };
 } // namespace loxe::ast
 
 namespace loxe::ast
